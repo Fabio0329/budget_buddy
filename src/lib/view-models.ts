@@ -3,6 +3,8 @@ export type NavItem = {
   label: string;
   description: string;
   matchMode?: "exact" | "prefix";
+  activePathPrefixes?: string[];
+  activePathExclusions?: string[];
 };
 
 export type AppUserVM = {
@@ -129,6 +131,14 @@ export type TransactionListVM = {
   type: "income" | "expense" | "transfer";
   categoryName: string;
   accountName: string;
+};
+
+export type TransactionManagerVM = TransactionListVM & {
+  date: string;
+  amountCents: number;
+  accountId: string;
+  categoryId: string | null;
+  notes: string;
 };
 
 export type TransactionFilterState = {

@@ -34,7 +34,13 @@ export function AppSidebar({
 
       <nav className="mt-6 flex flex-1 flex-col gap-2">
         {navigation.map((item) => (
-          <NavLink key={item.href} href={item.href} matchMode={item.matchMode}>
+          <NavLink
+            key={item.href}
+            activePathExclusions={item.activePathExclusions}
+            activePathPrefixes={item.activePathPrefixes}
+            href={item.href}
+            matchMode={item.matchMode}
+          >
             <span className="text-sm font-semibold">{item.label}</span>
             <span className="mt-1 block text-xs text-muted">
               {item.description}

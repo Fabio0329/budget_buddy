@@ -24,6 +24,8 @@ export const appNavigation: NavItem[] = [
     label: "Transactions",
     description: "Search, filter, and review activity",
     matchMode: "exact",
+    activePathPrefixes: ["/transactions"],
+    activePathExclusions: ["/transactions/import"],
   },
   {
     href: "/budgets",

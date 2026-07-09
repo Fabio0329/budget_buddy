@@ -8,16 +8,32 @@ export function NavLink({
   children,
   href,
   matchMode = "exact",
+  activePathExclusions,
+  activePathPrefixes,
 }: Readonly<{
   children: React.ReactNode;
   href: string;
   matchMode?: "exact" | "prefix";
+  activePathPrefixes?: string[];
+  activePathExclusions?: string[];
 }>) {
   const pathname = usePathname();
-  const isActive =
+  const isExplicitActive =
+    activePathPrefixes && activePathPrefixes.length > 0
+      ? activePathPrefixes.some(
+          (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+        )
+      : null;
+  const isExcluded =
+    activePathExclusions?.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    ) ?? false;
+  const isMatchedByMode =
     matchMode === "prefix"
       ? pathname === href || pathname.startsWith(`${href}/`)
       : pathname === href;
+  const isActive =
+    !isExcluded && (isExplicitActive === null ? isMatchedByMode : isExplicitActive);
 
   return (
     <Link

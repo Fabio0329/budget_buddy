@@ -36,7 +36,13 @@ export function MobileNav({
           </div>
           <nav className="grid gap-2">
             {navigation.map((item) => (
-              <NavLink key={item.href} href={item.href} matchMode={item.matchMode}>
+              <NavLink
+                key={item.href}
+                activePathExclusions={item.activePathExclusions}
+                activePathPrefixes={item.activePathPrefixes}
+                href={item.href}
+                matchMode={item.matchMode}
+              >
                 <span className="text-sm font-semibold">{item.label}</span>
               </NavLink>
             ))}
