@@ -19,9 +19,10 @@
   --accent: #4e8fc7;
   --accent-soft: rgba(78, 143, 199, 0.14);
   --shadow: 0 24px 60px rgba(15, 23, 32, 0.09);
-  --font-sans-stack: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
-  --font-display-stack: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
-    Georgia, serif;
+  --font-sans-stack: var(--font-geist), "Avenir Next", "Trebuchet MS",
+    "Segoe UI", sans-serif;
+  --font-display-stack: var(--font-geist), "Avenir Next", "Trebuchet MS",
+    "Segoe UI", sans-serif;
 }
 
 @theme inline {
@@ -52,6 +53,13 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 13px;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 14px;
+  }
 }
 
 body {

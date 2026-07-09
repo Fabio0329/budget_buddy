@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const geist = localFont({
+  src: "../../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
+  display: "swap",
+  variable: "--font-geist",
+  fallback: ["Avenir Next", "Trebuchet MS", "Segoe UI", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://budget-buddy.local"),
@@ -17,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full bg-canvas text-ink antialiased">
         <div className="app-frame">{children}</div>
       </body>
