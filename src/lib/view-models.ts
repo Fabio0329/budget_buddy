@@ -18,7 +18,63 @@ export type DashboardOverviewVM = {
   monthlyExpenseDisplay: string;
   netCashFlowDisplay: string;
   remainingBudgetDisplay: string;
+  totalAccountBalanceDisplay: string;
   largestExpenseCategory: string;
+};
+
+export type CategorySpendVM = {
+  id: string;
+  label: string;
+  valueDisplay: string;
+  sharePercent: number;
+  color: string;
+};
+
+export type IncomeExpenseBarVM = {
+  id: string;
+  label: string;
+  income: number;
+  incomeDisplay: string;
+  expense: number;
+  expenseDisplay: string;
+};
+
+export type DailySpendVM = {
+  id: string;
+  label: string;
+  amount: number;
+  valueDisplay: string;
+};
+
+export type UpcomingRecurringVM = {
+  id: string;
+  label: string;
+  nextDateDisplay: string;
+  frequencyLabel: string;
+  amountDisplay: string;
+};
+
+export type GoalProgressVM = {
+  id: string;
+  name: string;
+  currentAmountDisplay: string;
+  targetAmountDisplay: string;
+  remainingAmountDisplay: string;
+  progressPercent: number;
+  targetDateDisplay: string;
+};
+
+export type DashboardMonthVM = {
+  id: string;
+  label: string;
+  summary: DashboardOverviewVM;
+  categorySpend: CategorySpendVM[];
+  incomeVsExpense: IncomeExpenseBarVM[];
+  dailySpending: DailySpendVM[];
+  recentTransactions: TransactionListVM[];
+  budgets: BudgetProgressVM[];
+  upcomingRecurring: UpcomingRecurringVM[];
+  goal: GoalProgressVM;
 };
 
 export type AccountSummaryVM = {
