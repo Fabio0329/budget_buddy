@@ -9,6 +9,21 @@ const highlights = [
   "Import-ready transaction workflows",
 ];
 
+const featureColumns = [
+  {
+    title: "Clarity first",
+    body: "See income, spending, and budget pressure in one deliberately paced dashboard instead of hunting across tabs.",
+  },
+  {
+    title: "Built for review",
+    body: "Every route is organized around monthly check-ins: accounts, categories, transactions, budgets, and imports.",
+  },
+  {
+    title: "Portfolio-grade flow",
+    body: "This frontend is being built in reviewable phases, with protected routing and typed UI contracts from the start.",
+  },
+];
+
 export default function MarketingHomePage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-8 sm:px-10 lg:px-12">
@@ -109,6 +124,47 @@ export default function MarketingHomePage() {
                 {mockDashboardOverview.remainingBudgetDisplay}
               </p>
             </div>
+          </div>
+        </SectionCard>
+      </section>
+
+      <section className="mt-16 grid gap-4 md:grid-cols-3">
+        {featureColumns.map((feature) => (
+          <SectionCard key={feature.title} className="p-6">
+            <p className="section-title text-2xl text-ink">{feature.title}</p>
+            <p className="mt-3 text-sm leading-7 text-muted">{feature.body}</p>
+          </SectionCard>
+        ))}
+      </section>
+
+      <section className="mt-16">
+        <SectionCard className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <p className="eyebrow text-xs font-semibold text-accent">
+              Current phase
+            </p>
+            <h2 className="section-title text-4xl text-ink">
+              Public pages and mock auth are now connected.
+            </h2>
+            <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
+              You can sign up or log in with mock credentials, be redirected
+              into the protected shell, and sign back out without backend
+              infrastructure in place yet.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              href="/signup"
+            >
+              Try the signup flow
+            </Link>
+            <Link
+              className="rounded-full border border-line bg-white/60 px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-white"
+              href="/login"
+            >
+              Go to login
+            </Link>
           </div>
         </SectionCard>
       </section>

@@ -1,16 +1,13 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
+import { LoginForm } from "@/components/login-form";
 
-export default function LoginPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Login"
-      title="Sign-in UI lands in phase 2."
-      description="The auth route exists now so the protected app flow and navigation structure can be reviewed before form behavior is added."
-      bullets={[
-        "Validated email/password form",
-        "Mock submit state and redirect behavior",
-        "Error and pending interaction states",
-      ]}
-    />
-  );
+type LoginPageProps = {
+  searchParams: Promise<{
+    redirectTo?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+
+  return <LoginForm redirectTo={params.redirectTo ?? "/dashboard"} />;
 }

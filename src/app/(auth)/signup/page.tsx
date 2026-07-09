@@ -1,16 +1,13 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
+import { SignupForm } from "@/components/signup-form";
 
-export default function SignupPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Signup"
-      title="Registration UX follows in the next commit."
-      description="This route is intentionally scaffolded only. The next phase will add form fields, validation, and a mock onboarding transition."
-      bullets={[
-        "Name, email, and password inputs",
-        "Inline validation messaging",
-        "Post-signup redirect into the app shell",
-      ]}
-    />
-  );
+type SignupPageProps = {
+  searchParams: Promise<{
+    redirectTo?: string;
+  }>;
+};
+
+export default async function SignupPage({ searchParams }: SignupPageProps) {
+  const params = await searchParams;
+
+  return <SignupForm redirectTo={params.redirectTo ?? "/dashboard"} />;
 }

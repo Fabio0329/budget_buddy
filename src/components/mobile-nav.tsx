@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import { NavLink } from "@/components/nav-link";
+import { SignoutForm } from "@/components/signout-form";
 import type { AppUserVM, NavItem } from "@/lib/view-models";
 
 export function MobileNav({
@@ -40,6 +41,7 @@ export function MobileNav({
               </NavLink>
             ))}
           </nav>
+          <SignoutForm compact />
         </div>
       ) : null}
     </div>

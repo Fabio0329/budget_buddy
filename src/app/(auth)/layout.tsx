@@ -14,16 +14,24 @@ export default function AuthLayout({
       <div className="grid flex-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <section className="space-y-5">
           <p className="eyebrow text-xs font-semibold text-accent">
-            Phase 1 foundation
+            Mock auth flow
           </p>
           <h1 className="section-title text-4xl leading-tight text-ink sm:text-5xl">
-            Auth routes are wired and ready for form logic in the next phase.
+            Sign in and move directly into the protected dashboard shell.
           </h1>
           <p className="max-w-xl text-base leading-7 text-muted">
-            This commit establishes the route groups, visual system, and shared
-            card layout so login and signup can be implemented without changing
-            the surrounding shell.
+            This phase adds cookie-backed mock sessions, redirect-based route
+            protection, and form-driven auth pages so the application flow can
+            be reviewed before real provider integration.
           </p>
+          <div className="grid gap-3 text-sm text-muted sm:grid-cols-2">
+            <div className="rounded-[24px] border border-line bg-white/55 p-4">
+              Any valid email format works.
+            </div>
+            <div className="rounded-[24px] border border-line bg-white/55 p-4">
+              Password must contain letters and numbers.
+            </div>
+          </div>
         </section>
         {children}
       </div>

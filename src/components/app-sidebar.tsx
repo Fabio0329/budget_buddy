@@ -1,5 +1,6 @@
 import { BrandMark } from "@/components/brand-mark";
 import { NavLink } from "@/components/nav-link";
+import { SignoutForm } from "@/components/signout-form";
 import type { AppUserVM, NavItem } from "@/lib/view-models";
 
 export function AppSidebar({
@@ -13,11 +14,21 @@ export function AppSidebar({
     <aside className="surface-panel sticky top-6 hidden h-[calc(100vh-3rem)] w-[280px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col">
       <BrandMark />
       <div className="mt-8 rounded-[28px] border border-line bg-white/55 p-4">
-        <p className="text-sm font-medium text-ink">{user.name}</p>
-        <p className="mt-1 text-sm text-muted">{user.email}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-ink">{user.name}</p>
+            <p className="mt-1 text-sm text-muted">{user.email}</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-sm font-semibold text-accent">
+            {user.initials}
+          </div>
+        </div>
         <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-positive">
           <span className="status-dot bg-positive" />
-          Ready for monthly review
+          Mock session active
+        </div>
+        <div className="mt-4">
+          <SignoutForm />
         </div>
       </div>
 

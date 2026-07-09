@@ -1,15 +1,22 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { getMockSessionUser } from "@/lib/auth";
 import { appNavigation } from "@/lib/navigation";
-import { mockCurrentUser } from "@/lib/mock-data";
 
-export default function ProtectedAppLayout({
+export default async function ProtectedAppLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const user = await getMockSessionUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <AppShell navigation={appNavigation} user={mockCurrentUser}>
+    <AppShell navigation={appNavigation} user={user}>
       {children}
     </AppShell>
   );
