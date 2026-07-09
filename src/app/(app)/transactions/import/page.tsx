@@ -1,16 +1,15 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
+import { CsvImportWizard } from "@/components/csv-import-wizard";
+import { PageHeader } from "@/components/page-header";
 
 export default function TransactionImportPage() {
   return (
-    <RoutePlaceholder
-      eyebrow="Import"
-      title="CSV import wizard comes later."
-      description="This route is reserved for the multi-step upload, column mapping, preview, and confirmation flow."
-      bullets={[
-        "Upload and header detection",
-        "Column mapping and validation preview",
-        "Duplicate and invalid-row feedback",
-      ]}
-    />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Import"
+        title="Map and import a transaction CSV"
+        description="This phase adds a reviewable import wizard with header detection, column mapping, row validation, duplicate protection, and direct transaction creation for valid rows."
+      />
+      <CsvImportWizard />
+    </div>
   );
 }

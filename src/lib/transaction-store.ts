@@ -38,6 +38,10 @@ export function useTransactionStore() {
     setTransactions([transaction, ...transactionState]);
   }
 
+  function importTransactions(nextTransactions: TransactionManagerVM[]) {
+    setTransactions([...nextTransactions, ...transactionState]);
+  }
+
   function updateTransaction(transaction: TransactionManagerVM) {
     setTransactions(
       transactionState.map((entry) =>
@@ -55,6 +59,7 @@ export function useTransactionStore() {
   return {
     transactions,
     createTransaction,
+    importTransactions,
     updateTransaction,
     deleteTransaction,
   };
