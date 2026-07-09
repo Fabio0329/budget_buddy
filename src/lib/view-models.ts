@@ -85,12 +85,39 @@ export type AccountSummaryVM = {
   status: "healthy" | "warning";
 };
 
+export type AccountManagerVM = {
+  id: string;
+  name: string;
+  institution: string;
+  type: string;
+  startingBalanceCents: number;
+  startingBalanceDisplay: string;
+  currentBalanceCents: number;
+  currentBalanceDisplay: string;
+  linkedTransactionCount: number;
+  lastUpdatedLabel: string;
+  note: string;
+  status: "healthy" | "warning";
+};
+
 export type CategoryListVM = {
   id: string;
   name: string;
   type: "income" | "expense";
   color: string;
   icon: string;
+};
+
+export type CategoryManagerVM = {
+  id: string;
+  name: string;
+  type: "income" | "expense";
+  color: string;
+  iconToken: string;
+  linkedTransactionCount: number;
+  monthlyAverageCents: number;
+  monthlyAverageDisplay: string;
+  note: string;
 };
 
 export type TransactionListVM = {

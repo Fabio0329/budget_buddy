@@ -1,16 +1,16 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
+import { CategoriesManager } from "@/components/categories-manager";
+import { PageHeader } from "@/components/page-header";
+import { mockCategoryManagerItems } from "@/lib/mock-data";
 
 export default function CategoriesPage() {
   return (
-    <RoutePlaceholder
-      eyebrow="Categories"
-      title="Category management is scaffolded."
-      description="The page route and shared content frame are ready. Category visuals, forms, and user-defined groupings are phase 4 work."
-      bullets={[
-        "Income and expense groupings",
-        "Color and icon treatment",
-        "Fallback handling for linked transactions",
-      ]}
-    />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Categories"
+        title="Shape the category system"
+        description="Categories stay split between income and expense so transaction entry, budgets, and reporting can all target the right bucket. This phase adds mock CRUD and linked-transaction safeguards."
+      />
+      <CategoriesManager initialCategories={mockCategoryManagerItems} />
+    </div>
   );
 }
