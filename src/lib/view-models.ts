@@ -174,6 +174,25 @@ export type BudgetProgressVM = {
   status: "under" | "near" | "over";
 };
 
+export type BudgetManagerVM = {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  categoryColor: string;
+  month: string;
+  monthLabel: string;
+  limitAmountCents: number;
+  limitDisplay: string;
+  note: string;
+};
+
+export type BudgetFormValues = {
+  categoryId: string;
+  month: string;
+  limitAmount: string;
+  note: string;
+};
+
 export type CsvColumnMapping = {
   amount: string | null;
   date: string | null;

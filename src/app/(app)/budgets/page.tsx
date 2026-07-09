@@ -1,16 +1,23 @@
-import { RoutePlaceholder } from "@/components/route-placeholder";
+import { BudgetsManager } from "@/components/budgets-manager";
+import { PageHeader } from "@/components/page-header";
 
-export default function BudgetsPage() {
+type BudgetsPageProps = {
+  searchParams: Promise<{
+    month?: string;
+  }>;
+};
+
+export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
+  const params = await searchParams;
+
   return (
-    <RoutePlaceholder
-      eyebrow="Budgets"
-      title="Budget tracking UI is framed."
-      description="The shared route shell is ready for monthly budget rows, progress meters, and category-based limit editing in a later phase."
-      bullets={[
-        "Month-scoped budget summaries",
-        "Under, near, and over-budget states",
-        "Create and edit budget flows",
-      ]}
-    />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Budgets"
+        title="Compare planned versus actual spending"
+        description="This phase adds month-scoped budget management, derived spending progress from transaction activity, and create/edit flows for category limits."
+      />
+      <BudgetsManager initialMonth={params.month ?? "2026-07"} />
+    </div>
   );
 }
