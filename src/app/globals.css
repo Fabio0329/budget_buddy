@@ -87,10 +87,6 @@ textarea {
   background: rgba(78, 143, 199, 0.2);
 }
 
-.app-frame {
-  min-height: 100vh;
-}
-
 .surface-panel {
   background: var(--surface);
   border: 1px solid var(--line);

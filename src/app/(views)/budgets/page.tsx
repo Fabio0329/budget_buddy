@@ -1,5 +1,5 @@
-import { BudgetsManager } from "@/components/budgets-manager";
 import { PageHeader } from "@/components/page-header";
+import { BudgetsManager } from "./budgets-manager";
 
 type BudgetsPageProps = {
   searchParams: Promise<{

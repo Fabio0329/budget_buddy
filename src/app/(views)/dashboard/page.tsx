@@ -1,14 +1,14 @@
-import { DashboardBudgetList } from "@/components/dashboard-budget-list";
-import { DashboardDonutChart } from "@/components/dashboard-donut-chart";
-import { DashboardGoalCard } from "@/components/dashboard-goal-card";
-import { DashboardLineChart } from "@/components/dashboard-line-chart";
-import { DashboardMonthSwitcher } from "@/components/dashboard-month-switcher";
-import { DashboardRecurringList } from "@/components/dashboard-recurring-list";
-import { DashboardSpendComparison } from "@/components/dashboard-spend-comparison";
-import { DashboardStatCard } from "@/components/dashboard-stat-card";
-import { DashboardTransactionsList } from "@/components/dashboard-transactions-list";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
+import { DashboardBudgetList } from "./_components/dashboard-budget-list";
+import { DashboardDonutChart } from "./_components/dashboard-donut-chart";
+import { DashboardGoalCard } from "./_components/dashboard-goal-card";
+import { DashboardLineChart } from "./_components/dashboard-line-chart";
+import { DashboardMonthSwitcher } from "./_components/dashboard-month-switcher";
+import { DashboardRecurringList } from "./_components/dashboard-recurring-list";
+import { DashboardSpendComparison } from "./_components/dashboard-spend-comparison";
+import { DashboardStatCard } from "./_components/dashboard-stat-card";
+import { DashboardTransactionsList } from "./_components/dashboard-transactions-list";
 import {
   dashboardMonthOptions,
   getDashboardMonthData,

@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { BudgetForm } from "@/components/budget-form";
+import { BudgetForm } from "../_components/budget-form";
 
 type NewBudgetPageProps = {
   searchParams: Promise<{

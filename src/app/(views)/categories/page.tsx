@@ -1,5 +1,5 @@
-import { CategoriesManager } from "@/components/categories-manager";
 import { PageHeader } from "@/components/page-header";
+import { CategoriesManager } from "./categories-manager";
 import { mockCategoryManagerItems } from "@/lib/mock-data";
 
 export default function CategoriesPage() {

@@ -1,4 +1,4 @@
-import { SignupForm } from "@/components/signup-form";
+import { SignupForm } from "./signup-form";
 
 type SignupPageProps = {
   searchParams: Promise<{

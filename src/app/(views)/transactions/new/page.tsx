@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { TransactionForm } from "@/components/transaction-form";
+import { TransactionForm } from "../_components/transaction-form";
 import {
   mockAccountManagerItems,
   mockCategoryManagerItems,

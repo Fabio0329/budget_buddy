@@ -1,5 +1,5 @@
-import { AccountsManager } from "@/components/accounts-manager";
 import { PageHeader } from "@/components/page-header";
+import { AccountsManager } from "./accounts-manager";
 import { mockAccountManagerItems } from "@/lib/mock-data";
 
 export default function AccountsPage() {

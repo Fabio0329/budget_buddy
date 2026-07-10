@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { TransactionsManager } from "@/components/transactions-manager";
+import { TransactionsManager } from "./transactions-manager";
 import {
   mockAccountManagerItems,
   mockCategoryManagerItems,

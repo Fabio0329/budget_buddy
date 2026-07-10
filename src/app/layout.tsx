@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full bg-canvas text-ink antialiased">
-        <div className="app-frame">{children}</div>
+        <div className="min-h-screen">{children}</div>
       </body>
     </html>
   );
