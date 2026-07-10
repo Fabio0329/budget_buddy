@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ScrollReset } from "@/components/scroll-reset";
 import "./globals.css";
 
 const geist = localFont({
@@ -27,6 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full bg-canvas text-ink antialiased">
+        <Suspense fallback={null}>
+          <ScrollReset />
+        </Suspense>
         <div className="min-h-screen">{children}</div>
       </body>
     </html>

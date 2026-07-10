@@ -7,12 +7,14 @@ import { cx } from "@/lib/utils";
 export function NavLink({
   children,
   href,
+  onClick,
   matchMode = "exact",
   activePathExclusions,
   activePathPrefixes,
 }: Readonly<{
   children: React.ReactNode;
   href: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
   matchMode?: "exact" | "prefix";
   activePathPrefixes?: string[];
   activePathExclusions?: string[];
@@ -40,10 +42,11 @@ export function NavLink({
       className={cx(
         "rounded-[24px] border px-4 py-3 transition",
         isActive
-          ? "border-line-strong bg-ink text-canvas shadow-[0_12px_30px_rgba(19,34,43,0.14)]"
+          ? "border-line-strong bg-accent-soft text-ink shadow-[0_10px_24px_rgba(19,34,43,0.08)]"
           : "border-transparent bg-transparent text-ink hover:border-line hover:bg-white/60",
       )}
       href={href}
+      onClick={onClick}
     >
       {children}
     </Link>
