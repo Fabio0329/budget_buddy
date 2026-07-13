@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountType {
+  CHECKING    @map("checking")
+  SAVINGS     @map("savings")
+  CREDIT_CARD @map("credit_card")
+  CASH        @map("cash")
+  INVESTMENT  @map("investment")
+  OTHER       @map("other")
+}
+
+enum CategoryType {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
+}
+
+enum TransactionType {
+  INCOME   @map("income")
+  EXPENSE  @map("expense")
+  TRANSFER @map("transfer")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(320)
+  passwordHash String        @db.VarChar(255)
+  image        String?       @db.Text
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Account {
+  id                   String        @id @default(cuid())
+  userId               String
+  name                 String        @db.VarChar(100)
+  institution          String        @db.VarChar(120)
+  type                 AccountType
+  startingBalanceCents Int           @default(0)
+  currentBalanceCents  Int           @default(0)
+  note                 String?       @db.Text
+  createdAt            DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime      @updatedAt @db.Timestamptz(3)
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions         Transaction[] @relation("TransactionAccount")
+
+  @@unique([id, userId])
+  @@index([userId])
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  userId       String
+  name         String        @db.VarChar(80)
+  type         CategoryType
+  color        String        @db.VarChar(7)
+  icon         String        @db.VarChar(40)
+  note         String?       @db.Text
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] @relation("TransactionCategory")
+  budgets      Budget[]      @relation("BudgetCategory")
+
+  @@unique([id, userId])
+  @@unique([userId, name])
+  @@index([userId, type])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  accountId   String
+  categoryId  String?
+  type        TransactionType
+  amountCents Int
+  merchant    String          @default("") @db.VarChar(160)
+  description String          @default("") @db.VarChar(240)
+  date        DateTime        @db.Date
+  notes       String?         @db.Text
+  createdAt   DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(3)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account     Account         @relation("TransactionAccount", fields: [accountId, userId], references: [id, userId], onDelete: Restrict)
+  category    Category?       @relation("TransactionCategory", fields: [categoryId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@index([userId, date])
+  @@index([userId, accountId, date])
+  @@index([userId, categoryId, date])
+  @@index([userId, type, date])
+  @@index([userId, accountId, date, amountCents, merchant])
+}
+
+model Budget {
+  id               String   @id @default(cuid())
+  userId           String
+  categoryId       String
+  month            Int
+  year             Int
+  limitAmountCents Int
+  note             String?  @db.Text
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         Category @relation("BudgetCategory", fields: [categoryId, userId], references: [id, userId], onDelete: Restrict)
+
+  @@unique([userId, categoryId, month, year])
+  @@index([userId, year, month])
+}

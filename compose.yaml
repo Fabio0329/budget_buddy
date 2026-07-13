@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: budget_buddy
+      POSTGRES_PASSWORD: budget_buddy
+      POSTGRES_USER: budget_buddy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U budget_buddy -d budget_buddy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - budget_buddy_postgres:/var/lib/postgresql/data
+
+volumes:
+  budget_buddy_postgres:
