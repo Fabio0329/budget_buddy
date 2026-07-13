@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { ScrollReset } from "@/components/scroll-reset";
+import { ScrollReset } from "@/shared/components/scroll-reset";
 import "./globals.css";
 
 const geist = localFont({

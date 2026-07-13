@@ -1,0 +1,456 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { EmptyState } from "@/shared/components/empty-state";
+import { SectionCard } from "@/shared/components/section-card";
+import { formatCurrencyFromCents } from "@/shared/utils/formatters";
+import type { CategoryManagerVM } from "@/shared/types/view-models";
+
+const colorChoices = [
+  { label: "Sky", value: "#4E8FC7" },
+  { label: "Teal", value: "#0F8B8D" },
+  { label: "Coral", value: "#D96C5F" },
+  { label: "Amber", value: "#D09A32" },
+  { label: "Slate", value: "#93A7BC" },
+];
+
+type CategoryDraft = {
+  color: string;
+  iconToken: string;
+  name: string;
+  type: "income" | "expense";
+};
+
+const emptyDraft: CategoryDraft = {
+  color: colorChoices[0].value,
+  iconToken: "OT",
+  name: "",
+  type: "expense",
+};
+
+function createDraft(category: CategoryManagerVM): CategoryDraft {
+  return {
+    color: category.color,
+    iconToken: category.iconToken,
+    name: category.name,
+    type: category.type,
+  };
+}
+
+export function CategoriesManager({
+  initialCategories,
+}: Readonly<{
+  initialCategories: CategoryManagerVM[];
+}>) {
+  const [categories, setCategories] = useState(initialCategories);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialCategories[0]?.id ?? null,
+  );
+  const [draft, setDraft] = useState<CategoryDraft>(
+    initialCategories[0] ? createDraft(initialCategories[0]) : emptyDraft,
+  );
+  const [mode, setMode] = useState<"create" | "edit">(
+    initialCategories[0] ? "edit" : "create",
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const selectedCategory =
+    mode === "edit"
+      ? categories.find((category) => category.id === selectedId) ?? null
+      : null;
+
+  const grouped = useMemo(
+    () => ({
+      expense: categories.filter((category) => category.type === "expense"),
+      income: categories.filter((category) => category.type === "income"),
+    }),
+    [categories],
+  );
+
+  function resetForCreate(type: "income" | "expense" = "expense") {
+    setMode("create");
+    setSelectedId(null);
+    setDraft({
+      ...emptyDraft,
+      type,
+    });
+    setError(null);
+    setNotice(null);
+  }
+
+  function selectCategory(category: CategoryManagerVM) {
+    setMode("edit");
+    setSelectedId(category.id);
+    setDraft(createDraft(category));
+    setError(null);
+    setNotice(null);
+  }
+
+  function updateDraft<Key extends keyof CategoryDraft>(
+    key: Key,
+    value: CategoryDraft[Key],
+  ) {
+    setDraft((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function saveCategory() {
+    const name = draft.name.trim();
+    const iconToken = draft.iconToken.trim().toUpperCase().slice(0, 2);
+
+    if (!name) {
+      setError("Category name is required.");
+      return;
+    }
+
+    if (iconToken.length < 1) {
+      setError("Add a one or two character icon token.");
+      return;
+    }
+
+    if (mode === "edit" && selectedCategory) {
+      setCategories((current) =>
+        current.map((category) =>
+          category.id === selectedCategory.id
+            ? {
+                ...category,
+                color: draft.color,
+                iconToken,
+                name,
+                type: draft.type,
+              }
+            : category,
+        ),
+      );
+      setNotice("Category updated.");
+    } else {
+      const nextCategory: CategoryManagerVM = {
+        id: `cat-${Math.random().toString(36).slice(2, 8)}`,
+        color: draft.color,
+        iconToken,
+        linkedTransactionCount: 0,
+        monthlyAverageCents: 0,
+        monthlyAverageDisplay: "$0",
+        name,
+        note: "New category ready for future transaction mapping.",
+        type: draft.type,
+      };
+      setCategories((current) => [nextCategory, ...current]);
+      setMode("edit");
+      setSelectedId(nextCategory.id);
+      setDraft(createDraft(nextCategory));
+      setNotice("Category created.");
+    }
+
+    setError(null);
+  }
+
+  function deleteCategory(category: CategoryManagerVM) {
+    if (category.linkedTransactionCount > 0) {
+      setError(
+        "This category is still linked to transactions. Move those transactions first or keep the category.",
+      );
+      setNotice(null);
+      return;
+    }
+
+    const remaining = categories.filter((entry) => entry.id !== category.id);
+    setCategories(remaining);
+    setError(null);
+    setNotice("Category removed.");
+
+    if (remaining.length === 0) {
+      resetForCreate();
+      return;
+    }
+
+    selectCategory(remaining[0]);
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="card-grid">
+        <SectionCard className="p-5">
+          <p className="text-sm text-muted">Expense categories</p>
+          <p className="mt-4 text-3xl font-semibold text-ink">
+            {grouped.expense.length}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Core spending buckets used by budget and transaction workflows.
+          </p>
+        </SectionCard>
+        <SectionCard className="p-5">
+          <p className="text-sm text-muted">Income categories</p>
+          <p className="mt-4 text-3xl font-semibold text-ink">
+            {grouped.income.length}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Separate income sources so inflow stays distinct from spend.
+          </p>
+        </SectionCard>
+        <SectionCard className="p-5">
+          <p className="text-sm text-muted">Linked transactions</p>
+          <p className="mt-4 text-3xl font-semibold text-ink">
+            {categories.reduce(
+              (sum, category) => sum + category.linkedTransactionCount,
+              0,
+            )}
+          </p>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Deleting a category remains blocked when transaction history depends
+            on it.
+          </p>
+        </SectionCard>
+      </section>
+
+      <SectionCard className="p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="eyebrow text-[11px] font-semibold text-accent">
+              Category system
+            </p>
+            <h2 className="section-title mt-2 text-3xl text-ink">
+              Income and expense groups stay separate
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+              onClick={() => resetForCreate("expense")}
+              type="button"
+            >
+              Add expense category
+            </button>
+            <button
+              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              onClick={() => resetForCreate("income")}
+              type="button"
+            >
+              Add income category
+            </button>
+          </div>
+        </div>
+      </SectionCard>
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="space-y-6">
+          {(["expense", "income"] as const).map((type) => (
+            <SectionCard key={type} className="p-6">
+              <p className="eyebrow text-[11px] font-semibold text-accent">
+                {type === "expense" ? "Expense categories" : "Income categories"}
+              </p>
+              <h2 className="section-title mt-2 text-3xl text-ink">
+                {type === "expense"
+                  ? "Spending buckets"
+                  : "Sources of income"}
+              </h2>
+              <div className="mt-6 space-y-3">
+                {grouped[type].length > 0 ? (
+                  grouped[type].map((category) => {
+                    const isSelected =
+                      mode === "edit" && selectedId === category.id;
+
+                    return (
+                      <div
+                        key={category.id}
+                        className={`rounded-[24px] border p-4 transition ${
+                          isSelected
+                            ? "border-line-strong bg-white/90 shadow-[0_12px_30px_rgba(15,23,32,0.08)]"
+                            : "border-line bg-white/65"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold text-white"
+                              style={{ backgroundColor: category.color }}
+                            >
+                              {category.iconToken}
+                            </span>
+                            <div>
+                              <p className="text-sm font-semibold text-ink">
+                                {category.name}
+                              </p>
+                              <p className="mt-1 text-sm text-muted">
+                                {category.linkedTransactionCount} linked
+                                transactions
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.14em] text-muted">
+                              Monthly average
+                            </p>
+                            <p className="mt-1 text-lg font-semibold text-ink">
+                              {category.monthlyAverageDisplay}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.14em] text-muted">
+                              Type
+                            </p>
+                            <p className="mt-1 text-lg font-semibold text-ink">
+                              {type === "expense" ? "Expense" : "Income"}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-4 text-sm leading-6 text-muted">
+                          {category.note}
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                            onClick={() => selectCategory(category)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
+                            disabled={category.linkedTransactionCount > 0}
+                            onClick={() => deleteCategory(category)}
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <EmptyState
+                    title={`No ${type} categories yet`}
+                    description={`Create your first ${type} category to organize future transactions and budgets.`}
+                  />
+                )}
+              </div>
+            </SectionCard>
+          ))}
+        </div>
+
+        <SectionCard className="p-6">
+          <p className="eyebrow text-[11px] font-semibold text-accent">
+            {mode === "edit" ? "Edit category" : "Create category"}
+          </p>
+          <h2 className="section-title mt-2 text-3xl text-ink">
+            {mode === "edit"
+              ? selectedCategory?.name ?? "Category details"
+              : "Add a category"}
+          </h2>
+          <div className="mt-6 grid gap-4">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-ink">Name</span>
+              <input
+                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                onChange={(event) => updateDraft("name", event.target.value)}
+                placeholder="Groceries"
+                value={draft.name}
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-ink">Type</span>
+              <select
+                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                onChange={(event) =>
+                  updateDraft(
+                    "type",
+                    event.target.value as CategoryDraft["type"],
+                  )
+                }
+                value={draft.type}
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-ink">
+                Color accent
+              </span>
+              <select
+                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                onChange={(event) => updateDraft("color", event.target.value)}
+                value={draft.color}
+              >
+                {colorChoices.map((choice) => (
+                  <option key={choice.value} value={choice.value}>
+                    {choice.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-ink">
+                Icon token
+              </span>
+              <input
+                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm uppercase text-ink outline-none transition focus:border-accent focus:bg-white"
+                maxLength={2}
+                onChange={(event) =>
+                  updateDraft("iconToken", event.target.value.toUpperCase())
+                }
+                placeholder="GR"
+                value={draft.iconToken}
+              />
+            </label>
+
+            {error ? (
+              <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+                {error}
+              </p>
+            ) : null}
+
+            {notice ? (
+              <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+                {notice}
+              </p>
+            ) : null}
+
+            <div className="rounded-[24px] border border-line bg-white/70 p-4">
+              <p className="text-sm font-semibold text-ink">Preview</p>
+              <div className="mt-4 flex items-center gap-3">
+                <span
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold text-white"
+                  style={{ backgroundColor: draft.color }}
+                >
+                  {draft.iconToken || "OT"}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">
+                    {draft.name || "Category name"}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">
+                    {draft.type === "expense" ? "Expense bucket" : "Income source"}{" "}
+                    · average {formatCurrencyFromCents(0)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button
+                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+                onClick={saveCategory}
+                type="button"
+              >
+                {mode === "edit" ? "Save changes" : "Create category"}
+              </button>
+              <button
+                className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+                onClick={() => resetForCreate(draft.type)}
+                type="button"
+              >
+                New category
+              </button>
+            </div>
+          </div>
+        </SectionCard>
+      </div>
+    </div>
+  );
+}

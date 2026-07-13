@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
-import { getMockSessionUser } from "@/lib/auth";
-import { appNavigation } from "@/lib/navigation";
+import { AppShell } from "@/shared/components/app-shell";
+import { getMockSessionUser } from "@/server/auth/session";
+import { appNavigation } from "@/shared/utils/navigation";
 
 export default async function ProtectedAppLayout({
   children,

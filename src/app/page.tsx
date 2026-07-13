@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/brand-mark";
-import { SectionCard } from "@/components/section-card";
-import { mockDashboardOverview, mockCurrentUser } from "@/lib/mock-data";
+import { BrandMark } from "@/shared/components/brand-mark";
+import { SectionCard } from "@/shared/components/section-card";
+import { mockDashboardOverview, mockCurrentUser } from "@/mocks/finance";
 
 const highlights = [
   "Monthly spending pulse",

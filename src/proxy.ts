@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { MOCK_SESSION_COOKIE } from "@/lib/auth-constants";
+import { MOCK_SESSION_COOKIE } from "@/server/auth/constants";
 
 const protectedPrefixes = [
   "/dashboard",

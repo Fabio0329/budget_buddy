@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/page-header";
-import { CsvImportWizard } from "./csv-import-wizard";
+import { PageHeader } from "@/shared/components/page-header";
+import { CsvImportWizard } from "@/features/transactions/components/csv-import-wizard.client";
 
 export default function TransactionImportPage() {
   return (

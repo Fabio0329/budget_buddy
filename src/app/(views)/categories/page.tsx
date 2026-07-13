@@ -1,6 +1,6 @@
-import { PageHeader } from "@/components/page-header";
-import { CategoriesManager } from "./categories-manager";
-import { mockCategoryManagerItems } from "@/lib/mock-data";
+import { PageHeader } from "@/shared/components/page-header";
+import { CategoriesManager } from "@/features/categories/components/categories-manager.client";
+import { mockCategoryManagerItems } from "@/mocks/finance";
 
 export default function CategoriesPage() {
   return (

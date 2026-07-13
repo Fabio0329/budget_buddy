@@ -1,9 +1,9 @@
-import { PageHeader } from "@/components/page-header";
-import { TransactionForm } from "../../_components/transaction-form";
+import { PageHeader } from "@/shared/components/page-header";
+import { TransactionForm } from "@/features/transactions/components/transaction-form.client";
 import {
   mockAccountManagerItems,
   mockCategoryManagerItems,
-} from "@/lib/mock-data";
+} from "@/mocks/finance";
 
 type EditTransactionPageProps = {
   params: Promise<{

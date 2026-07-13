@@ -1,10 +1,10 @@
-import { PageHeader } from "@/components/page-header";
-import { TransactionsManager } from "./transactions-manager";
+import { PageHeader } from "@/shared/components/page-header";
+import { TransactionsManager } from "@/features/transactions/components/transactions-manager.client";
 import {
   mockAccountManagerItems,
   mockCategoryManagerItems,
-} from "@/lib/mock-data";
-import type { TransactionFilterState } from "@/lib/view-models";
+} from "@/mocks/finance";
+import type { TransactionFilterState } from "@/shared/types/view-models";
 
 type TransactionsPageProps = {
   searchParams: Promise<Partial<Record<keyof TransactionFilterState | "q", string>>>;

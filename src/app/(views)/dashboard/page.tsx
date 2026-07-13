@@ -1,18 +1,18 @@
-import { EmptyState } from "@/components/empty-state";
-import { PageHeader } from "@/components/page-header";
-import { DashboardBudgetList } from "./_components/dashboard-budget-list";
-import { DashboardDonutChart } from "./_components/dashboard-donut-chart";
-import { DashboardGoalCard } from "./_components/dashboard-goal-card";
-import { DashboardLineChart } from "./_components/dashboard-line-chart";
-import { DashboardMonthSwitcher } from "./_components/dashboard-month-switcher";
-import { DashboardRecurringList } from "./_components/dashboard-recurring-list";
-import { DashboardSpendComparison } from "./_components/dashboard-spend-comparison";
-import { DashboardStatCard } from "./_components/dashboard-stat-card";
-import { DashboardTransactionsList } from "./_components/dashboard-transactions-list";
+import { EmptyState } from "@/shared/components/empty-state";
+import { PageHeader } from "@/shared/components/page-header";
+import { DashboardBudgetList } from "@/features/dashboard/components/dashboard-budget-list";
+import { DashboardDonutChart } from "@/features/dashboard/components/dashboard-donut-chart";
+import { DashboardGoalCard } from "@/features/dashboard/components/dashboard-goal-card";
+import { DashboardLineChart } from "@/features/dashboard/components/dashboard-line-chart";
+import { DashboardMonthSwitcher } from "@/features/dashboard/components/dashboard-month-switcher.client";
+import { DashboardRecurringList } from "@/features/dashboard/components/dashboard-recurring-list";
+import { DashboardSpendComparison } from "@/features/dashboard/components/dashboard-spend-comparison";
+import { DashboardStatCard } from "@/features/dashboard/components/dashboard-stat-card";
+import { DashboardTransactionsList } from "@/features/dashboard/components/dashboard-transactions-list";
 import {
   dashboardMonthOptions,
   getDashboardMonthData,
-} from "@/lib/mock-data";
+} from "@/mocks/finance";
 import type { ReactNode } from "react";
 
 type DashboardCard = {
