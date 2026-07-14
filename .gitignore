@@ -33,6 +33,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# generated database client
+/src/server/generated/prisma
+
+# local notes
+/docs/
+
 # vercel
 .vercel
 
