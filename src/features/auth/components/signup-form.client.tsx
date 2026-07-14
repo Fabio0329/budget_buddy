@@ -17,7 +17,7 @@ export function SignupForm({
 
   return (
     <AuthCard
-      description="Start with a simple profile and enter the protected app shell immediately. Real authentication storage and provider integration come later."
+      description="Create your profile and enter your private Budget Buddy workspace. Passwords are salted and securely hashed before storage."
       eyebrow="Sign Up"
       footer={
         <p className="text-sm text-muted">
@@ -63,7 +63,7 @@ export function SignupForm({
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted">No real account is created yet.</p>
+          <p className="text-sm text-muted">Your financial data stays scoped to your account.</p>
           <SubmitButton label="Create account" pendingLabel="Creating..." />
         </div>
       </form>

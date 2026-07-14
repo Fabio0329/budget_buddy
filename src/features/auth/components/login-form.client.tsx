@@ -17,7 +17,7 @@ export function LoginForm({
 
   return (
     <AuthCard
-      description="Use any valid email and a password with at least eight characters, one letter, and one number. This phase uses a cookie-backed mock session."
+      description="Enter the email and password for your Budget Buddy account. Your session stays signed in securely for up to two weeks."
       eyebrow="Log In"
       footer={
         <p className="text-sm text-muted">
@@ -55,7 +55,7 @@ export function LoginForm({
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted">Mock auth only for this phase.</p>
+          <p className="text-sm text-muted">Your password is verified securely.</p>
           <SubmitButton label="Log in" pendingLabel="Signing in..." />
         </div>
       </form>

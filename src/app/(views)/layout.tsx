@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { AppShell } from "@/shared/components/app-shell";
-import { getMockSessionUser } from "@/server/auth/session";
+import { requireCurrentUser } from "@/server/auth/session";
 import { appNavigation } from "@/shared/utils/navigation";
 
 export default async function ProtectedAppLayout({
@@ -9,11 +8,7 @@ export default async function ProtectedAppLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const user = await getMockSessionUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const user = await requireCurrentUser();
 
   return (
     <AppShell navigation={appNavigation} user={user}>

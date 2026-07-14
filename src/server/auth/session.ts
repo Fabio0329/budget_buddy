@@ -1,23 +1,12 @@
 import "server-only";
 
+import { createHash, randomBytes } from "node:crypto";
+import { cache } from "react";
 import { cookies } from "next/headers";
-import { MOCK_SESSION_COOKIE } from "@/server/auth/constants";
+import { redirect } from "next/navigation";
+import { SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/server/auth/constants";
+import { db } from "@/server/db/client";
 import type { AppUserVM } from "@/shared/types/view-models";
-
-type MockSessionPayload = {
-  email: string;
-  name: string;
-};
-
-export function deriveDisplayNameFromEmail(email: string) {
-  const localPart = email.split("@")[0] ?? "Budget Buddy User";
-
-  return localPart
-    .split(/[._-]/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 function createInitials(name: string) {
   return name
@@ -28,53 +17,89 @@ function createInitials(name: string) {
     .join("");
 }
 
-export function createMockSessionCookieValue(payload: MockSessionPayload) {
-  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+function hashSessionToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
 }
 
-function parseMockSessionCookieValue(value: string): MockSessionPayload | null {
-  try {
-    const parsed = JSON.parse(
-      Buffer.from(value, "base64url").toString("utf8"),
-    ) as Partial<MockSessionPayload>;
-
-    if (
-      typeof parsed.name !== "string" ||
-      parsed.name.length === 0 ||
-      typeof parsed.email !== "string" ||
-      parsed.email.length === 0
-    ) {
-      return null;
-    }
-
-    return {
-      name: parsed.name,
-      email: parsed.email,
-    };
-  } catch {
-    return null;
-  }
+function sessionCookieOptions(expires: Date) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    expires,
+  };
 }
 
-export async function getMockSessionUser(): Promise<AppUserVM | null> {
+export async function createSession(userId: string) {
+  const token = randomBytes(32).toString("base64url");
+  const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
+
+  await db.session.create({
+    data: {
+      userId,
+      tokenHash: hashSessionToken(token),
+      expiresAt,
+    },
+  });
+
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(MOCK_SESSION_COOKIE)?.value;
+  cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions(expiresAt));
+}
 
-  if (!sessionCookie) {
+export async function deleteSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  cookieStore.delete(SESSION_COOKIE);
+
+  if (token) {
+    await db.session.deleteMany({
+      where: { tokenHash: hashSessionToken(token) },
+    });
+  }
+}
+
+export const getCurrentUser = cache(async (): Promise<AppUserVM | null> => {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+
+  if (!token) {
     return null;
   }
 
-  const session = parseMockSessionCookieValue(sessionCookie);
+  const session = await db.session.findFirst({
+    where: {
+      tokenHash: hashSessionToken(token),
+      expiresAt: { gt: new Date() },
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
   if (!session) {
     return null;
   }
 
   return {
-    id: `mock-${session.email}`,
-    name: session.name,
-    email: session.email,
-    initials: createInitials(session.name),
+    ...session.user,
+    initials: createInitials(session.user.name),
   };
+});
+
+export async function requireCurrentUser() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return user;
 }
 
 export function normalizeRedirectTarget(value: FormDataEntryValue | null) {
@@ -82,9 +107,16 @@ export function normalizeRedirectTarget(value: FormDataEntryValue | null) {
     return "/dashboard";
   }
 
-  if (value.startsWith("//")) {
+  try {
+    const baseUrl = new URL("https://budget-buddy.local");
+    const targetUrl = new URL(value, baseUrl);
+
+    if (targetUrl.origin !== baseUrl.origin) {
+      return "/dashboard";
+    }
+
+    return `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`;
+  } catch {
     return "/dashboard";
   }
-
-  return value;
 }

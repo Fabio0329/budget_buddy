@@ -8,13 +8,13 @@ Prisma.
 Requirements:
 
 - Node.js 20.19 or newer
-- Docker with Compose
+- A PostgreSQL database, such as a Supabase project
 
-Create a local environment file and start PostgreSQL:
+Create `.env.local` with the application and migration connection strings:
 
-```bash
-cp .env.example .env
-docker compose up -d postgres
+```env
+DATABASE_URL="postgresql://...transaction-pooler..."
+DIRECT_URL="postgresql://...session-pooler..."
 ```
 
 Create the database schema and generate the Prisma client:

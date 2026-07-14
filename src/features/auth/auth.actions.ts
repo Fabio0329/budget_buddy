@@ -1,14 +1,14 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { AuthActionState } from "@/features/auth/auth-form-state";
 import {
-  createMockSessionCookieValue,
-  deriveDisplayNameFromEmail,
+  createSession,
+  deleteSession,
   normalizeRedirectTarget,
 } from "@/server/auth/session";
-import { MOCK_SESSION_COOKIE } from "@/server/auth/constants";
-import type { AuthActionState } from "@/features/auth/auth-form-state";
+import { hashPassword, verifyPassword } from "@/server/auth/password";
+import { db } from "@/server/db/client";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,15 +28,13 @@ function validatePassword(password: string) {
   return null;
 }
 
-async function setSessionCookie(name: string, email: string) {
-  const store = await cookies();
-  store.set(MOCK_SESSION_COOKIE, createMockSessionCookieValue({ name, email }), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
-  });
+function isUniqueConstraintError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "P2002"
+  );
 }
 
 export async function login(
@@ -53,22 +51,41 @@ export async function login(
     errors.email = "Enter a valid email address.";
   }
 
-  const passwordError = validatePassword(password);
-  if (passwordError) {
-    errors.password = passwordError;
+  if (!password) {
+    errors.password = "Enter your password.";
   }
 
   if (Object.keys(errors).length > 0) {
     return {
       errors,
       message: "Fix the highlighted fields and try again.",
-      values: {
-        email,
-      },
+      values: { email },
     };
   }
 
-  await setSessionCookie(deriveDisplayNameFromEmail(email), email);
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+      select: { id: true, passwordHash: true },
+    });
+    const passwordMatches = await verifyPassword(password, user?.passwordHash);
+
+    if (!user || !passwordMatches) {
+      return {
+        message: "Email or password is incorrect.",
+        values: { email },
+      };
+    }
+
+    await createSession(user.id);
+  } catch (error) {
+    console.error("Login failed", error);
+    return {
+      message: "We could not log you in right now. Please try again.",
+      values: { email },
+    };
+  }
+
   redirect(redirectTo);
 }
 
@@ -85,9 +102,11 @@ export async function signup(
 
   if (name.length < 2) {
     errors.name = "Name must be at least 2 characters.";
+  } else if (name.length > 100) {
+    errors.name = "Name must be 100 characters or fewer.";
   }
 
-  if (!validateEmail(email)) {
+  if (!validateEmail(email) || email.length > 320) {
     errors.email = "Enter a valid email address.";
   }
 
@@ -100,19 +119,46 @@ export async function signup(
     return {
       errors,
       message: "Complete the missing fields to create your account.",
-      values: {
-        email,
-        name,
-      },
+      values: { email, name },
     };
   }
 
-  await setSessionCookie(name, email);
+  try {
+    const user = await db.user.create({
+      data: {
+        name,
+        email,
+        passwordHash: await hashPassword(password),
+      },
+      select: { id: true },
+    });
+
+    await createSession(user.id);
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return {
+        errors: { email: "An account with this email already exists." },
+        message: "Log in instead, or use another email address.",
+        values: { email, name },
+      };
+    }
+
+    console.error("Signup failed", error);
+    return {
+      message: "We could not create your account right now. Please try again.",
+      values: { email, name },
+    };
+  }
+
   redirect(redirectTo);
 }
 
 export async function logout() {
-  const store = await cookies();
-  store.delete(MOCK_SESSION_COOKIE);
+  try {
+    await deleteSession();
+  } catch (error) {
+    console.error("Logout failed", error);
+  }
+
   redirect("/login");
 }

@@ -144,12 +144,12 @@ export default function MarketingHomePage() {
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
-              Public pages and mock auth are now connected.
+              Real accounts and secure sessions are now connected.
             </h2>
             <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              You can sign up or log in with mock credentials, be redirected
-              into the protected shell, and sign back out without backend
-              infrastructure in place yet.
+              You can create a persisted account, log in with your password,
+              enter the protected shell, and revoke the active session by
+              signing out.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

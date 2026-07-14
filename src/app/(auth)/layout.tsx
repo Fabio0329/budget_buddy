@@ -14,19 +14,18 @@ export default function AuthLayout({
       <div className="grid flex-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <section className="space-y-5">
           <p className="eyebrow text-xs font-semibold text-accent">
-            Mock auth flow
+            Secure account access
           </p>
           <h1 className="section-title text-4xl leading-tight text-ink sm:text-5xl">
             Sign in and move directly into the protected dashboard shell.
           </h1>
           <p className="max-w-xl text-base leading-7 text-muted">
-            This phase adds cookie-backed mock sessions, redirect-based route
-            protection, and form-driven auth pages so the application flow can
-            be reviewed before real provider integration.
+            Create a persisted account, sign in with a securely hashed
+            password, and use a revocable database-backed session.
           </p>
           <div className="grid gap-3 text-sm text-muted sm:grid-cols-2">
             <div className="rounded-[24px] border border-line bg-white/55 p-4">
-              Any valid email format works.
+              Use the email you registered with.
             </div>
             <div className="rounded-[24px] border border-line bg-white/55 p-4">
               Password must contain letters and numbers.
