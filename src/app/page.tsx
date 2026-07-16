@@ -144,12 +144,12 @@ export default function MarketingHomePage() {
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
-              Accounts and categories now persist securely.
+              Transactions now persist with synchronized balances.
             </h2>
             <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              Sign in to manage user-scoped financial accounts and categories,
-              with validated edits and safeguards for linked transaction and
-              budget history.
+              Sign in to create, edit, filter, and import user-scoped activity,
+              with server validation, duplicate protection, and atomic account
+              balance updates.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

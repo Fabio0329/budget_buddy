@@ -1,11 +1,16 @@
 import { PageHeader } from "@/shared/components/page-header";
 import { TransactionForm } from "@/features/transactions/components/transaction-form.client";
-import {
-  mockAccountManagerItems,
-  mockCategoryManagerItems,
-} from "@/mocks/finance";
+import { getAccountManagerItems } from "@/features/accounts/account.queries";
+import { getCategoryManagerItems } from "@/features/categories/category.queries";
+import { requireCurrentUser } from "@/server/auth/session";
 
-export default function NewTransactionPage() {
+export default async function NewTransactionPage() {
+  const user = await requireCurrentUser();
+  const [accounts, categories] = await Promise.all([
+    getAccountManagerItems(user.id),
+    getCategoryManagerItems(user.id),
+  ]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -14,8 +19,8 @@ export default function NewTransactionPage() {
         description="Add income, expense, or transfer activity with account/category validation before it lands in the review list."
       />
       <TransactionForm
-        accounts={mockAccountManagerItems}
-        categories={mockCategoryManagerItems}
+        accounts={accounts}
+        categories={categories}
         mode="create"
       />
     </div>
