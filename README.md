@@ -52,7 +52,6 @@ src/app/      Routes, layouts, and page composition
 src/features/ Feature-specific UI, state, actions, and validation
 src/shared/   Shared components, types, and utilities
 src/server/   Server-only infrastructure, data access, and generated clients
-src/mocks/    Temporary mock data used before backend integration
 prisma/       Database schema and migration history
 ```
 

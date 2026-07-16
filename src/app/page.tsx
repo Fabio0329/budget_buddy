@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { BrandMark } from "@/shared/components/brand-mark";
 import { SectionCard } from "@/shared/components/section-card";
-import { mockDashboardOverview, mockCurrentUser } from "@/mocks/finance";
+
+const demoSnapshot = {
+  expenses: "$5,965",
+  income: "$8,420",
+  name: "Sample monthly plan",
+  netCashFlow: "+$2,455",
+  remainingBudget: "$1,135",
+};
 
 const highlights = [
   "Monthly spending pulse",
@@ -92,7 +99,7 @@ export default function MarketingHomePage() {
                 Snapshot
               </p>
               <h2 className="section-title mt-1 text-3xl text-ink">
-                {mockCurrentUser.name}
+                {demoSnapshot.name}
               </h2>
             </div>
             <div className="rounded-full bg-positive-soft px-3 py-1 text-xs font-semibold text-positive">
@@ -103,25 +110,25 @@ export default function MarketingHomePage() {
             <div className="rounded-3xl bg-white/70 p-4">
               <p className="text-sm text-muted">Income</p>
               <p className="mt-2 text-2xl font-semibold text-positive">
-                {mockDashboardOverview.monthlyIncomeDisplay}
+                {demoSnapshot.income}
               </p>
             </div>
             <div className="rounded-3xl bg-white/70 p-4">
               <p className="text-sm text-muted">Expenses</p>
               <p className="mt-2 text-2xl font-semibold text-negative">
-                {mockDashboardOverview.monthlyExpenseDisplay}
+                {demoSnapshot.expenses}
               </p>
             </div>
             <div className="rounded-3xl bg-white/70 p-4">
               <p className="text-sm text-muted">Net cash flow</p>
               <p className="mt-2 text-2xl font-semibold text-ink">
-                {mockDashboardOverview.netCashFlowDisplay}
+                {demoSnapshot.netCashFlow}
               </p>
             </div>
             <div className="rounded-3xl bg-white/70 p-4">
               <p className="text-sm text-muted">Remaining budget</p>
               <p className="mt-2 text-2xl font-semibold text-ink">
-                {mockDashboardOverview.remainingBudgetDisplay}
+                {demoSnapshot.remainingBudget}
               </p>
             </div>
           </div>
@@ -144,12 +151,12 @@ export default function MarketingHomePage() {
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
-              Budgets now track persisted spending.
+              The MVP backend is fully connected.
             </h2>
             <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              Set user-scoped monthly limits for expense categories and compare
-              them with persisted transaction activity using validated,
-              database-backed budget workflows.
+              Authentication, accounts, categories, transactions, imports,
+              budgets, and monthly dashboard aggregations now run on persisted,
+              user-scoped data.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

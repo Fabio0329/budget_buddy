@@ -11,8 +11,7 @@ src/
 ├── app/       Route files, layouts, loading states, and error boundaries
 ├── features/  Product features and their interactive boundaries
 ├── shared/    Shared components, types, and utilities
-├── server/    Server-only infrastructure, data access, and generated clients
-└── mocks/     Temporary mock data
+└── server/    Server-only infrastructure, data access, and generated clients
 
 prisma/
 ├── schema.prisma
@@ -36,14 +35,16 @@ features/transactions/
 │   ├── transaction-form.client.tsx
 │   ├── transactions-manager.client.tsx
 │   └── csv-import-wizard.client.tsx
-└── transaction.store.ts
+├── transaction.actions.ts
+├── transaction.queries.ts
+└── transaction.validation.ts
 ```
 
 The `.client.tsx` suffix is a project convention that makes interactive React
 boundaries visible. These files use the `"use client"` directive because they
 need state, event handlers, browser APIs, or client-side hooks.
 
-Future feature modules can add files such as:
+Feature modules can add files such as:
 
 ```text
 account.actions.ts      Thin Next.js Server Actions
@@ -84,9 +85,8 @@ helpers such as currency formatting, CSV parsing, and class-name composition.
 Avoid turning `shared` into a catch-all directory. Code that only makes sense
 for one product feature belongs with that feature.
 
-## Temporary compatibility directories
+## View models
 
-`src/mocks` and `src/shared/types/view-models.ts` preserve the existing frontend
-while the real backend is implemented. As each feature moves to persisted data,
-its mock records can be removed and its types can move closer to the feature
-when they are no longer shared.
+`src/shared/types/view-models.ts` contains presentation contracts shared across
+multiple features. Feature-specific query result types remain colocated with
+their server-only query modules.

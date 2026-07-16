@@ -76,7 +76,7 @@ export type DashboardMonthVM = {
   recentTransactions: TransactionListVM[];
   budgets: BudgetProgressVM[];
   upcomingRecurring: UpcomingRecurringVM[];
-  goal: GoalProgressVM;
+  goal: GoalProgressVM | null;
 };
 
 export type AccountSummaryVM = {

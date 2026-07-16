@@ -9,10 +9,8 @@ import { DashboardRecurringList } from "@/features/dashboard/components/dashboar
 import { DashboardSpendComparison } from "@/features/dashboard/components/dashboard-spend-comparison";
 import { DashboardStatCard } from "@/features/dashboard/components/dashboard-stat-card";
 import { DashboardTransactionsList } from "@/features/dashboard/components/dashboard-transactions-list";
-import {
-  dashboardMonthOptions,
-  getDashboardMonthData,
-} from "@/mocks/finance";
+import { getDashboardMonthData } from "@/features/dashboard/dashboard.queries";
+import { requireCurrentUser } from "@/server/auth/session";
 import type { ReactNode } from "react";
 
 type DashboardCard = {
@@ -33,7 +31,11 @@ export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   const params = await searchParams;
-  const dashboard = getDashboardMonthData(params.month);
+  const user = await requireCurrentUser();
+  const { dashboard, months } = await getDashboardMonthData(
+    user.id,
+    params.month,
+  );
   const cards: DashboardCard[] = [
     {
       label: "Income",
@@ -89,11 +91,11 @@ export default async function DashboardPage({
         <PageHeader
           eyebrow="Dashboard"
           title={dashboard.summary.monthLabel}
-          description="This overview consolidates cash flow, budget pressure, recurring items, and recent activity into one monthly review surface."
+          description="This persisted overview consolidates cash flow, category spending, budget pressure, account balances, and recent activity for the selected month."
         />
         <DashboardMonthSwitcher
           activeMonth={dashboard.id}
-          months={dashboardMonthOptions}
+          months={months}
         />
       </div>
 
@@ -110,17 +112,17 @@ export default async function DashboardPage({
         ))}
       </section>
 
-      {dashboard.categorySpend.length > 0 ? (
-        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        {dashboard.categorySpend.length > 0 ? (
           <DashboardDonutChart segments={dashboard.categorySpend} />
-          <DashboardSpendComparison bars={dashboard.incomeVsExpense} />
-        </section>
-      ) : (
-        <EmptyState
-          title="No dashboard data for this month"
-          description="Use the month picker to review a populated period. This zero-state is intentional so empty data can be reviewed before backend integration."
-        />
-      )}
+        ) : (
+          <EmptyState
+            title="No expense categories this month"
+            description="Expense category shares will appear after transactions are recorded for this period."
+          />
+        )}
+        <DashboardSpendComparison bars={dashboard.incomeVsExpense} />
+      </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         {dashboard.dailySpending.length > 0 ? (
@@ -131,7 +133,14 @@ export default async function DashboardPage({
             description="There are no expense points to plot for this month."
           />
         )}
-        <DashboardGoalCard goal={dashboard.goal} />
+        {dashboard.goal ? (
+          <DashboardGoalCard goal={dashboard.goal} />
+        ) : (
+          <EmptyState
+            title="Goals are outside the MVP"
+            description="Goal tracking can be added in a later product phase without blocking the persisted dashboard."
+          />
+        )}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
@@ -157,7 +166,7 @@ export default async function DashboardPage({
           ) : (
             <EmptyState
               title="No recurring items"
-              description="Upcoming recurring bills or income will appear here once they are configured."
+              description="Recurring transactions are outside the MVP and can be added in a later product phase."
             />
           )}
         </div>

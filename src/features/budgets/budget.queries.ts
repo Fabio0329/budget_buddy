@@ -174,7 +174,7 @@ export async function getBudgetMonthOptions(
     db.transaction.findMany({
       distinct: ["date"],
       select: { date: true },
-      where: { type: "EXPENSE", userId },
+      where: { userId },
     }),
   ]);
   budgets.forEach((budget) => keys.add(monthKey(budget.year, budget.month)));
