@@ -6,6 +6,7 @@ export function DashboardSpendComparison({
 }: Readonly<{
   bars: IncomeExpenseBarVM[];
 }>) {
+  const displayBars = [...bars].reverse();
   const maxValue = Math.max(
     ...bars.map((bar) => Math.max(bar.income, bar.expense)),
     1,
@@ -35,7 +36,7 @@ export function DashboardSpendComparison({
       </div>
 
       <div className="mt-6 space-y-5">
-        {bars.map((bar) => (
+        {displayBars.map((bar) => (
           <div key={bar.id}>
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="font-semibold text-ink">{bar.label}</span>
