@@ -53,15 +53,9 @@ export function CategoriesManager({
   initialCategories: CategoryManagerVM[];
 }>) {
   const categories = initialCategories;
-  const [selectedId, setSelectedId] = useState<string | null>(
-    initialCategories[0]?.id ?? null,
-  );
-  const [draft, setDraft] = useState<CategoryDraft>(
-    initialCategories[0] ? createDraft(initialCategories[0]) : emptyDraft,
-  );
-  const [mode, setMode] = useState<"create" | "edit">(
-    initialCategories[0] ? "edit" : "create",
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<CategoryDraft>(emptyDraft);
+  const [mode, setMode] = useState<"create" | "edit">("create");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [showFormFeedback, setShowFormFeedback] = useState(false);

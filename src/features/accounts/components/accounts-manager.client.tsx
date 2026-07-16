@@ -61,15 +61,9 @@ export function AccountsManager({
   initialAccounts: AccountManagerVM[];
 }>) {
   const accounts = initialAccounts;
-  const [selectedId, setSelectedId] = useState<string | null>(
-    initialAccounts[0]?.id ?? null,
-  );
-  const [draft, setDraft] = useState<AccountDraft>(
-    initialAccounts[0] ? createDraft(initialAccounts[0]) : emptyDraft,
-  );
-  const [mode, setMode] = useState<"create" | "edit">(
-    initialAccounts[0] ? "edit" : "create",
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<AccountDraft>(emptyDraft);
+  const [mode, setMode] = useState<"create" | "edit">("create");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [showFormFeedback, setShowFormFeedback] = useState(false);
@@ -201,28 +195,6 @@ export function AccountsManager({
           </p>
         </SectionCard>
       </section>
-
-      <SectionCard className="p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="eyebrow text-[11px] font-semibold text-accent">
-              Transaction readiness
-            </p>
-            <h2 className="section-title mt-2 text-3xl text-ink">
-              {accounts.length > 0
-                ? "Transactions are unlocked"
-                : "Add an account before recording transactions"}
-            </h2>
-          </div>
-          <button
-            className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-            onClick={resetForCreate}
-            type="button"
-          >
-            Add account
-          </button>
-        </div>
-      </SectionCard>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <SectionCard className="p-6">
