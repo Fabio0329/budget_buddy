@@ -19,9 +19,6 @@ export function AppSidebar({
             <p className="text-sm font-medium text-ink">{user.name}</p>
             <p className="mt-1 text-sm text-muted">{user.email}</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-sm font-semibold text-accent">
-            {user.initials}
-          </div>
         </div>
         <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-positive">
           <span className="status-dot bg-positive" />
@@ -48,16 +45,6 @@ export function AppSidebar({
           </NavLink>
         ))}
       </nav>
-
-      <div className="rounded-[28px] border border-line bg-[linear-gradient(135deg,var(--color-accent-soft),rgba(15,139,141,0.08))] p-4">
-        <p className="eyebrow text-[11px] font-semibold text-accent">
-          Foundation phase
-        </p>
-        <p className="mt-2 text-sm leading-6 text-surface-ink">
-          This shell is intentionally stable so later feature commits can focus
-          on behavior rather than layout rewrites.
-        </p>
-      </div>
     </aside>
   );
 }

@@ -2,10 +2,8 @@ import { EmptyState } from "@/shared/components/empty-state";
 import { PageHeader } from "@/shared/components/page-header";
 import { DashboardBudgetList } from "@/features/dashboard/components/dashboard-budget-list";
 import { DashboardDonutChart } from "@/features/dashboard/components/dashboard-donut-chart";
-import { DashboardGoalCard } from "@/features/dashboard/components/dashboard-goal-card";
 import { DashboardLineChart } from "@/features/dashboard/components/dashboard-line-chart";
 import { DashboardMonthSwitcher } from "@/features/dashboard/components/dashboard-month-switcher.client";
-import { DashboardRecurringList } from "@/features/dashboard/components/dashboard-recurring-list";
 import { DashboardSpendComparison } from "@/features/dashboard/components/dashboard-spend-comparison";
 import { DashboardStatCard } from "@/features/dashboard/components/dashboard-stat-card";
 import { DashboardTransactionsList } from "@/features/dashboard/components/dashboard-transactions-list";
@@ -52,7 +50,7 @@ export default async function DashboardPage({
       label: "Expenses",
       value: dashboard.summary.monthlyExpenseDisplay,
       tone: "text-negative",
-      detail: "Outflow tracked across categories and recurring costs.",
+      detail: "Outflow tracked across categorized expenses.",
       accent: (
         <span className="rounded-full bg-negative-soft px-3 py-1 text-xs font-semibold text-negative">
           Outflow
@@ -124,21 +122,13 @@ export default async function DashboardPage({
         <DashboardSpendComparison bars={dashboard.incomeVsExpense} />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <section>
         {dashboard.dailySpending.length > 0 ? (
           <DashboardLineChart points={dashboard.dailySpending} />
         ) : (
           <EmptyState
             title="No daily spend trend yet"
             description="There are no expense points to plot for this month."
-          />
-        )}
-        {dashboard.goal ? (
-          <DashboardGoalCard goal={dashboard.goal} />
-        ) : (
-          <EmptyState
-            title="Goals are outside the MVP"
-            description="Goal tracking can be added in a later product phase without blocking the persisted dashboard."
           />
         )}
       </section>
@@ -152,24 +142,14 @@ export default async function DashboardPage({
             description="Once transaction activity exists, the latest entries will appear here."
           />
         )}
-        <div className="space-y-6">
-          {dashboard.budgets.length > 0 ? (
-            <DashboardBudgetList budgets={dashboard.budgets} />
-          ) : (
-            <EmptyState
-              title="No budgets configured"
-              description="Budget progress will appear here after monthly limits are added."
-            />
-          )}
-          {dashboard.upcomingRecurring.length > 0 ? (
-            <DashboardRecurringList items={dashboard.upcomingRecurring} />
-          ) : (
-            <EmptyState
-              title="No recurring items"
-              description="Recurring transactions are outside the MVP and can be added in a later product phase."
-            />
-          )}
-        </div>
+        {dashboard.budgets.length > 0 ? (
+          <DashboardBudgetList budgets={dashboard.budgets} />
+        ) : (
+          <EmptyState
+            title="No budgets configured"
+            description="Budget progress will appear here after monthly limits are added."
+          />
+        )}
       </section>
     </div>
   );

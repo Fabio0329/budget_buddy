@@ -10,7 +10,6 @@ function refreshAccountConsumers() {
   revalidatePath("/accounts");
   revalidatePath("/dashboard");
   revalidatePath("/transactions/new");
-  revalidatePath("/transactions/import");
 }
 
 export async function saveAccount(

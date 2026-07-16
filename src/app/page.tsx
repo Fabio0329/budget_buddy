@@ -13,7 +13,7 @@ const demoSnapshot = {
 const highlights = [
   "Monthly spending pulse",
   "Category-aware budget tracking",
-  "Import-ready transaction workflows",
+  "Review-ready transaction workflows",
 ];
 
 const featureColumns = [

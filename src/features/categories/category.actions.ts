@@ -20,7 +20,6 @@ function refreshCategoryConsumers() {
   revalidatePath("/dashboard");
   revalidatePath("/budgets");
   revalidatePath("/transactions/new");
-  revalidatePath("/transactions/import");
 }
 
 export async function saveCategory(
