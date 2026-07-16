@@ -1,98 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition } from "react";
+import { startTransition, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { deleteBudget } from "@/features/budgets/budget.actions";
+import type {
+  BudgetMonthOption,
+  BudgetOverviewItem,
+} from "@/features/budgets/budget.queries";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
-import { dashboardMonthOptions } from "@/mocks/finance";
-import { useBudgetStore } from "@/features/budgets/budget.store";
-import { useTransactionStore } from "@/features/transactions/transaction.store";
 import {
   formatCurrencyFromCents,
   monthLabelFromKey,
-  monthStartAndEnd,
 } from "@/shared/utils/formatters";
-import type { BudgetManagerVM, TransactionManagerVM } from "@/shared/types/view-models";
-
-type DerivedBudget = BudgetManagerVM & {
-  spentAmountCents: number;
-  spentDisplay: string;
-  remainingAmountCents: number;
-  remainingDisplay: string;
-  progressPercent: number;
-  status: "under" | "near" | "over";
-};
-
-function deriveSpentForBudget(
-  transactions: TransactionManagerVM[],
-  budget: BudgetManagerVM,
-) {
-  const { start, end } = monthStartAndEnd(budget.month);
-
-  return transactions
-    .filter(
-      (transaction) =>
-        transaction.type === "expense" &&
-        transaction.categoryId === budget.categoryId &&
-        transaction.date >= start &&
-        transaction.date <= end,
-    )
-    .reduce((sum, transaction) => sum + Math.abs(transaction.amountCents), 0);
-}
-
-function deriveBudgetRow(
-  budget: BudgetManagerVM,
-  transactions: TransactionManagerVM[],
-): DerivedBudget {
-  const spentAmountCents = deriveSpentForBudget(transactions, budget);
-  const remainingAmountCents = budget.limitAmountCents - spentAmountCents;
-  const progressPercent = Math.round(
-    (spentAmountCents / Math.max(budget.limitAmountCents, 1)) * 100,
-  );
-  const status =
-    progressPercent >= 100 ? "over" : progressPercent >= 80 ? "near" : "under";
-
-  return {
-    ...budget,
-    progressPercent,
-    remainingAmountCents,
-    remainingDisplay: formatCurrencyFromCents(remainingAmountCents),
-    spentAmountCents,
-    spentDisplay: formatCurrencyFromCents(spentAmountCents),
-    status,
-  };
-}
 
 export function BudgetsManager({
-  initialMonth,
+  initialBudgets,
+  monthOptions,
+  selectedMonth,
 }: Readonly<{
-  initialMonth: string;
+  initialBudgets: BudgetOverviewItem[];
+  monthOptions: BudgetMonthOption[];
+  selectedMonth: string;
 }>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { budgets, deleteBudget } = useBudgetStore();
-  const { transactions } = useTransactionStore();
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
 
-  const selectedMonth =
-    dashboardMonthOptions.find((option) => option.value === initialMonth)?.value ??
-    dashboardMonthOptions[0].value;
-
-  const derivedBudgets = budgets
-    .filter((budget) => budget.month === selectedMonth)
-    .map((budget) => deriveBudgetRow(budget, transactions))
-    .sort((left, right) => left.categoryName.localeCompare(right.categoryName));
-
-  const totalLimit = derivedBudgets.reduce(
+  const totalLimit = initialBudgets.reduce(
     (sum, budget) => sum + budget.limitAmountCents,
     0,
   );
-  const totalSpent = derivedBudgets.reduce(
+  const totalSpent = initialBudgets.reduce(
     (sum, budget) => sum + budget.spentAmountCents,
     0,
   );
-  const nearOrOverCount = derivedBudgets.filter(
+  const nearOrOverCount = initialBudgets.filter(
     (budget) => budget.status !== "under",
   ).length;
 
@@ -105,13 +52,21 @@ export function BudgetsManager({
     });
   }
 
+  function removeBudget(id: string) {
+    startDeleteTransition(async () => {
+      const result = await deleteBudget(id);
+      setError(result.status === "error" ? (result.message ?? null) : null);
+      setNotice(result.status === "success" ? (result.message ?? null) : null);
+    });
+  }
+
   return (
     <div className="space-y-6">
       <section className="card-grid">
         <SectionCard className="p-5">
           <p className="text-sm text-muted">Budgets this month</p>
           <p className="mt-4 text-3xl font-semibold text-ink">
-            {derivedBudgets.length}
+            {initialBudgets.length}
           </p>
           <p className="mt-3 text-sm leading-6 text-muted">
             One budget per expense category and month.
@@ -155,7 +110,7 @@ export function BudgetsManager({
                 onChange={(event) => replaceMonth(event.target.value)}
                 value={selectedMonth}
               >
-                {dashboardMonthOptions.map((month) => (
+                {monthOptions.map((month) => (
                   <option key={month.value} value={month.value}>
                     {month.label}
                   </option>
@@ -172,7 +127,19 @@ export function BudgetsManager({
         </div>
       </SectionCard>
 
-      {derivedBudgets.length > 0 ? (
+      {error ? (
+        <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+          {error}
+        </p>
+      ) : null}
+
+      {notice ? (
+        <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+          {notice}
+        </p>
+      ) : null}
+
+      {initialBudgets.length > 0 ? (
         <SectionCard className="p-6">
           <div className="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -190,10 +157,10 @@ export function BudgetsManager({
           </div>
 
           <div className="mt-6 space-y-4">
-            {derivedBudgets.map((budget) => (
+            {initialBudgets.map((budget) => (
               <div
-                key={budget.id}
                 className="rounded-[24px] border border-line bg-white/70 p-5"
+                key={budget.id}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -205,7 +172,9 @@ export function BudgetsManager({
                       <p className="text-sm font-semibold text-ink">
                         {budget.categoryName}
                       </p>
-                      <p className="mt-1 text-sm text-muted">{budget.note}</p>
+                      <p className="mt-1 text-sm text-muted">
+                        {budget.note || "No note added."}
+                      </p>
                     </div>
                   </div>
                   <span
@@ -283,8 +252,9 @@ export function BudgetsManager({
                       Edit
                     </Link>
                     <button
-                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
-                      onClick={() => deleteBudget(budget.id)}
+                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
+                      disabled={isDeleting}
+                      onClick={() => removeBudget(budget.id)}
                       type="button"
                     >
                       Delete

@@ -144,12 +144,12 @@ export default function MarketingHomePage() {
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
-              Transactions now persist with synchronized balances.
+              Budgets now track persisted spending.
             </h2>
             <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              Sign in to create, edit, filter, and import user-scoped activity,
-              with server validation, duplicate protection, and atomic account
-              balance updates.
+              Set user-scoped monthly limits for expense categories and compare
+              them with persisted transaction activity using validated,
+              database-backed budget workflows.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
