@@ -1,6 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useActionState,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
+import {
+  deleteCategory as deleteCategoryAction,
+  saveCategory,
+} from "@/features/categories/category.actions";
+import { initialCategoryFormState } from "@/features/categories/category-form-state";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
@@ -42,7 +52,7 @@ export function CategoriesManager({
 }: Readonly<{
   initialCategories: CategoryManagerVM[];
 }>) {
-  const [categories, setCategories] = useState(initialCategories);
+  const categories = initialCategories;
   const [selectedId, setSelectedId] = useState<string | null>(
     initialCategories[0]?.id ?? null,
   );
@@ -54,6 +64,12 @@ export function CategoriesManager({
   );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showFormFeedback, setShowFormFeedback] = useState(false);
+  const [formState, formAction, isSaving] = useActionState(
+    submitCategory,
+    initialCategoryFormState,
+  );
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const selectedCategory =
     mode === "edit"
@@ -67,6 +83,24 @@ export function CategoriesManager({
     }),
     [categories],
   );
+  const fieldErrors = showFormFeedback ? formState.errors : undefined;
+
+  async function submitCategory(
+    previousState: typeof initialCategoryFormState,
+    formData: FormData,
+  ) {
+    const result = await saveCategory(previousState, formData);
+    setShowFormFeedback(true);
+    setError(result.status === "error" ? (result.message ?? null) : null);
+    setNotice(result.status === "success" ? (result.message ?? null) : null);
+
+    if (result.status === "success" && result.entityId) {
+      setMode("edit");
+      setSelectedId(result.entityId);
+    }
+
+    return result;
+  }
 
   function resetForCreate(type: "income" | "expense" = "expense") {
     setMode("create");
@@ -75,6 +109,7 @@ export function CategoriesManager({
       ...emptyDraft,
       type,
     });
+    setShowFormFeedback(false);
     setError(null);
     setNotice(null);
   }
@@ -83,6 +118,7 @@ export function CategoriesManager({
     setMode("edit");
     setSelectedId(category.id);
     setDraft(createDraft(category));
+    setShowFormFeedback(false);
     setError(null);
     setNotice(null);
   }
@@ -91,83 +127,43 @@ export function CategoriesManager({
     key: Key,
     value: CategoryDraft[Key],
   ) {
+    setShowFormFeedback(false);
     setDraft((current) => ({
       ...current,
       [key]: value,
     }));
   }
 
-  function saveCategory() {
-    const name = draft.name.trim();
-    const iconToken = draft.iconToken.trim().toUpperCase().slice(0, 2);
-
-    if (!name) {
-      setError("Category name is required.");
-      return;
-    }
-
-    if (iconToken.length < 1) {
-      setError("Add a one or two character icon token.");
-      return;
-    }
-
-    if (mode === "edit" && selectedCategory) {
-      setCategories((current) =>
-        current.map((category) =>
-          category.id === selectedCategory.id
-            ? {
-                ...category,
-                color: draft.color,
-                iconToken,
-                name,
-                type: draft.type,
-              }
-            : category,
-        ),
-      );
-      setNotice("Category updated.");
-    } else {
-      const nextCategory: CategoryManagerVM = {
-        id: `cat-${Math.random().toString(36).slice(2, 8)}`,
-        color: draft.color,
-        iconToken,
-        linkedTransactionCount: 0,
-        monthlyAverageCents: 0,
-        monthlyAverageDisplay: "$0",
-        name,
-        note: "New category ready for future transaction mapping.",
-        type: draft.type,
-      };
-      setCategories((current) => [nextCategory, ...current]);
-      setMode("edit");
-      setSelectedId(nextCategory.id);
-      setDraft(createDraft(nextCategory));
-      setNotice("Category created.");
-    }
-
-    setError(null);
-  }
-
   function deleteCategory(category: CategoryManagerVM) {
-    if (category.linkedTransactionCount > 0) {
+    if (
+      category.linkedTransactionCount > 0 ||
+      category.linkedBudgetCount > 0
+    ) {
       setError(
-        "This category is still linked to transactions. Move those transactions first or keep the category.",
+        "This category is still linked to transactions or budgets. Remove those links first or keep the category.",
       );
       setNotice(null);
       return;
     }
 
-    const remaining = categories.filter((entry) => entry.id !== category.id);
-    setCategories(remaining);
-    setError(null);
-    setNotice("Category removed.");
+    startDeleteTransition(async () => {
+      const result = await deleteCategoryAction(category.id);
+      setError(result.status === "error" ? (result.message ?? null) : null);
+      setNotice(result.status === "success" ? (result.message ?? null) : null);
 
-    if (remaining.length === 0) {
-      resetForCreate();
-      return;
-    }
+      if (result.status !== "success") return;
 
-    selectCategory(remaining[0]);
+      const remaining = categories.filter((entry) => entry.id !== category.id);
+      if (remaining.length === 0) {
+        setMode("create");
+        setSelectedId(null);
+        setDraft(emptyDraft);
+      } else if (selectedId === category.id) {
+        setMode("edit");
+        setSelectedId(remaining[0].id);
+        setDraft(createDraft(remaining[0]));
+      }
+    });
   }
 
   return (
@@ -276,7 +272,7 @@ export function CategoriesManager({
                               </p>
                               <p className="mt-1 text-sm text-muted">
                                 {category.linkedTransactionCount} linked
-                                transactions
+                                transactions · {category.linkedBudgetCount} budgets
                               </p>
                             </div>
                           </div>
@@ -312,7 +308,11 @@ export function CategoriesManager({
                           </button>
                           <button
                             className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
-                            disabled={category.linkedTransactionCount > 0}
+                            disabled={
+                              category.linkedTransactionCount > 0 ||
+                              category.linkedBudgetCount > 0 ||
+                              isDeleting
+                            }
                             onClick={() => deleteCategory(category)}
                             type="button"
                           >
@@ -342,20 +342,33 @@ export function CategoriesManager({
               ? selectedCategory?.name ?? "Category details"
               : "Add a category"}
           </h2>
-          <div className="mt-6 grid gap-4">
+          <form action={formAction} className="mt-6 grid gap-4">
+            <input
+              name="id"
+              type="hidden"
+              value={mode === "edit" ? (selectedCategory?.id ?? "") : ""}
+            />
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Name</span>
               <input
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                maxLength={80}
+                name="name"
                 onChange={(event) => updateDraft("name", event.target.value)}
                 placeholder="Groceries"
                 value={draft.name}
               />
+              {fieldErrors?.name ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.name}
+                </span>
+              ) : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Type</span>
               <select
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                name="type"
                 onChange={(event) =>
                   updateDraft(
                     "type",
@@ -367,6 +380,11 @@ export function CategoriesManager({
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
               </select>
+              {fieldErrors?.type ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.type}
+                </span>
+              ) : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">
@@ -374,6 +392,7 @@ export function CategoriesManager({
               </span>
               <select
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                name="color"
                 onChange={(event) => updateDraft("color", event.target.value)}
                 value={draft.color}
               >
@@ -383,6 +402,11 @@ export function CategoriesManager({
                   </option>
                 ))}
               </select>
+              {fieldErrors?.color ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.color}
+                </span>
+              ) : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">
@@ -391,12 +415,18 @@ export function CategoriesManager({
               <input
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm uppercase text-ink outline-none transition focus:border-accent focus:bg-white"
                 maxLength={2}
+                name="iconToken"
                 onChange={(event) =>
                   updateDraft("iconToken", event.target.value.toUpperCase())
                 }
                 placeholder="GR"
                 value={draft.iconToken}
               />
+              {fieldErrors?.iconToken ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.iconToken}
+                </span>
+              ) : null}
             </label>
 
             {error ? (
@@ -434,11 +464,15 @@ export function CategoriesManager({
 
             <div className="flex flex-wrap gap-3 pt-2">
               <button
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-                onClick={saveCategory}
-                type="button"
+                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                disabled={isSaving}
+                type="submit"
               >
-                {mode === "edit" ? "Save changes" : "Create category"}
+                {isSaving
+                  ? "Saving…"
+                  : mode === "edit"
+                    ? "Save changes"
+                    : "Create category"}
               </button>
               <button
                 className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
@@ -448,7 +482,7 @@ export function CategoriesManager({
                 New category
               </button>
             </div>
-          </div>
+          </form>
         </SectionCard>
       </div>
     </div>

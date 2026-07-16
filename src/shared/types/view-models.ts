@@ -116,6 +116,7 @@ export type CategoryManagerVM = {
   type: "income" | "expense";
   color: string;
   iconToken: string;
+  linkedBudgetCount: number;
   linkedTransactionCount: number;
   monthlyAverageCents: number;
   monthlyAverageDisplay: string;

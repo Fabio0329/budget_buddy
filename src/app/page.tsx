@@ -144,12 +144,12 @@ export default function MarketingHomePage() {
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
-              Real accounts and secure sessions are now connected.
+              Accounts and categories now persist securely.
             </h2>
             <p className="max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              You can create a persisted account, log in with your password,
-              enter the protected shell, and revoke the active session by
-              signing out.
+              Sign in to manage user-scoped financial accounts and categories,
+              with validated edits and safeguards for linked transaction and
+              budget history.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
