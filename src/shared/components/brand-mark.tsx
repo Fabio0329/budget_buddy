@@ -7,7 +7,7 @@ export function BrandMark() {
         BB
       </span>
       <span className="flex flex-col">
-        <span className="hidden sm:block section-title text-2xl leading-none text-ink">
+        <span className="section-title text-2xl leading-none text-ink">
           Budget Buddy
         </span>
         <span className="hidden sm:block eyebrow mt-1 text-[10px] font-semibold text-muted">

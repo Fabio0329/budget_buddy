@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
-import { mockAccountManagerItems, mockCategoryManagerItems } from "@/mocks/finance";
 import { parseCsvText } from "@/shared/utils/simple-csv";
-import { useTransactionStore } from "@/features/transactions/transaction.store";
+import { importTransactions } from "@/features/transactions/transaction.actions";
+import type { TransactionImportInput } from "@/features/transactions/transaction-form-state";
 import type {
+  AccountManagerVM,
+  CategoryManagerVM,
   CsvColumnMapping,
   CsvImportPreviewRow,
   TransactionManagerVM,
@@ -84,7 +87,16 @@ function parseMoneyToCents(value: string) {
   }
 
   const cents = Math.round(Math.abs(numeric) * 100);
+  if (!Number.isSafeInteger(cents) || cents < 1 || cents > 2_147_483_647) {
+    return null;
+  }
+
   return isNegative ? -cents : cents;
+}
+
+function isValidIsoDate(value: string) {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 function parseDateValue(value: string) {
@@ -94,7 +106,7 @@ function parseDateValue(value: string) {
   }
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return trimmed;
+    return isValidIsoDate(trimmed) ? trimmed : null;
   }
 
   const slashMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
@@ -102,8 +114,7 @@ function parseDateValue(value: string) {
     const [, month, day, year] = slashMatch;
     const fullYear = year.length === 2 ? `20${year}` : year;
     const iso = `${fullYear}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? null : iso;
+    return isValidIsoDate(iso) ? iso : null;
   }
 
   const parsed = new Date(trimmed);
@@ -153,25 +164,33 @@ function normalizeDuplicateKey(
   ].join("|");
 }
 
-export function CsvImportWizard() {
-  const { transactions, importTransactions } = useTransactionStore();
+export function CsvImportWizard({
+  accounts,
+  categories,
+  existingTransactions,
+}: Readonly<{
+  accounts: AccountManagerVM[];
+  categories: CategoryManagerVM[];
+  existingTransactions: TransactionManagerVM[];
+}>) {
+  const router = useRouter();
   const [stage, setStage] = useState<ImportStage>("upload");
   const [parsedCsv, setParsedCsv] = useState<ParsedCsv | null>(null);
   const [mapping, setMapping] = useState<CsvColumnMapping>(initialMapping);
   const [defaultAccountId, setDefaultAccountId] = useState(
-    mockAccountManagerItems[0]?.id ?? "",
+    accounts[0]?.id ?? "",
   );
   const [fallbackCategoryId, setFallbackCategoryId] = useState(
-    mockCategoryManagerItems.find((category) => category.type === "expense")?.id ??
-      "",
+    categories.find((category) => category.type === "expense")?.id ?? "",
   );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [isImporting, startImportTransition] = useTransition();
 
   const duplicateKeys = useMemo(
     () =>
       new Set(
-        transactions
+        existingTransactions
           .map((transaction) =>
             normalizeDuplicateKey(
               transaction.date,
@@ -182,7 +201,7 @@ export function CsvImportWizard() {
           )
           .filter(Boolean),
       ),
-    [transactions],
+    [existingTransactions],
   );
 
   const resolvedRows = useMemo(() => {
@@ -206,25 +225,23 @@ export function CsvImportWizard() {
       const date = parseDateValue(dateRaw);
       const type = inferTypeFromAmount(typeRaw, amountCents);
       const account =
-        mockAccountManagerItems.find(
+        accounts.find(
           (candidate) =>
             candidate.name.toLowerCase() === accountRaw.trim().toLowerCase(),
         ) ??
-        mockAccountManagerItems.find((candidate) => candidate.id === defaultAccountId) ??
+        accounts.find((candidate) => candidate.id === defaultAccountId) ??
         null;
 
-      const matchingCategory = mockCategoryManagerItems.find(
+      const matchingCategory = categories.find(
         (candidate) =>
           candidate.name.toLowerCase() === categoryRaw.trim().toLowerCase(),
       );
       const fallbackCategory =
-        mockCategoryManagerItems.find(
+        categories.find(
           (candidate) => candidate.id === fallbackCategoryId,
         ) ?? null;
 
-      const chosenCategory =
-        matchingCategory ??
-        (categoryRaw.trim().length > 0 ? fallbackCategory : fallbackCategory);
+      const chosenCategory = matchingCategory ?? fallbackCategory;
 
       let status: ResolvedImportRow["status"] = "valid";
       let message = "Ready to import";
@@ -299,7 +316,15 @@ export function CsvImportWizard() {
         type: type ?? "expense",
       };
     });
-  }, [defaultAccountId, duplicateKeys, fallbackCategoryId, mapping, parsedCsv]);
+  }, [
+    accounts,
+    categories,
+    defaultAccountId,
+    duplicateKeys,
+    fallbackCategoryId,
+    mapping,
+    parsedCsv,
+  ]);
 
   const summary = useMemo(() => {
     return resolvedRows.reduce(
@@ -350,34 +375,32 @@ export function CsvImportWizard() {
       return;
     }
 
-    const nextTransactions: TransactionManagerVM[] = validRows.map((row, index) => ({
-      id: `txn-import-${Date.now()}-${index}`,
+    const nextTransactions: TransactionImportInput[] = validRows.map((row) => ({
       accountId: row.accountId!,
-      accountName: row.accountName,
       amountCents: row.amountCents!,
-      amountDisplay: formatCurrencyFromCents(row.amountCents!),
       categoryId: row.categoryId,
-      categoryName: row.categoryName,
       date: row.date!,
-      dateDisplay: new Date(row.date!).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
       description: row.description,
       merchant: row.merchant,
       notes: row.notes,
       type: row.type,
     }));
 
-    importTransactions(nextTransactions);
-    setNotice(`Imported ${validRows.length} transaction${validRows.length === 1 ? "" : "s"}.`);
-    setError(null);
-    setStage("upload");
-    setParsedCsv(null);
-    setMapping(initialMapping);
+    startImportTransition(async () => {
+      const result = await importTransactions(nextTransactions);
+      setError(result.status === "error" ? result.message : null);
+      setNotice(result.status === "success" ? result.message : null);
+
+      if (result.status === "success") {
+        setStage("upload");
+        setParsedCsv(null);
+        setMapping(initialMapping);
+        router.refresh();
+      }
+    });
   }
 
-  if (mockAccountManagerItems.length === 0) {
+  if (accounts.length === 0) {
     return (
       <EmptyState
         title="Add an account before importing"
@@ -399,7 +422,7 @@ export function CsvImportWizard() {
         <SectionCard className="p-5">
           <p className="text-sm text-muted">Existing duplicates checked</p>
           <p className="mt-4 text-3xl font-semibold text-ink">
-            {transactions.length}
+            {existingTransactions.length}
           </p>
           <p className="mt-3 text-sm leading-6 text-muted">
             Duplicate detection compares date, amount, merchant, and account.
@@ -408,7 +431,7 @@ export function CsvImportWizard() {
         <SectionCard className="p-5">
           <p className="text-sm text-muted">Fallback account</p>
           <p className="mt-4 text-3xl font-semibold text-ink">
-            {mockAccountManagerItems.find((account) => account.id === defaultAccountId)?.name}
+            {accounts.find((account) => account.id === defaultAccountId)?.name}
           </p>
           <p className="mt-3 text-sm leading-6 text-muted">
             Used when the CSV does not provide an account column.
@@ -456,7 +479,7 @@ export function CsvImportWizard() {
                 onChange={(event) => setDefaultAccountId(event.target.value)}
                 value={defaultAccountId}
               >
-                {mockAccountManagerItems.map((account) => (
+                {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
                     {account.name}
                   </option>
@@ -472,13 +495,11 @@ export function CsvImportWizard() {
                 onChange={(event) => setFallbackCategoryId(event.target.value)}
                 value={fallbackCategoryId}
               >
-                {mockCategoryManagerItems
-                  .filter((category) => category.type === "expense")
-                  .map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name} ({category.type})
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -622,11 +643,11 @@ export function CsvImportWizard() {
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={summary.valid === 0}
+              disabled={summary.valid === 0 || isImporting}
               onClick={confirmImport}
               type="button"
             >
-              Import valid rows
+              {isImporting ? "Importing…" : "Import valid rows"}
             </button>
             <button
               className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"

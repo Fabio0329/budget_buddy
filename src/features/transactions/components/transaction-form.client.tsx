@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
-import { formatCurrencyFromCents, formatDateForInput } from "@/shared/utils/formatters";
-import { useTransactionStore } from "@/features/transactions/transaction.store";
+import { saveTransaction } from "@/features/transactions/transaction.actions";
+import { initialTransactionFormState } from "@/features/transactions/transaction-form-state";
+import { formatDateForInput } from "@/shared/utils/formatters";
 import type {
   AccountManagerVM,
   CategoryManagerVM,
@@ -17,12 +18,8 @@ import type {
 type TransactionFormProps = {
   accounts: AccountManagerVM[];
   categories: CategoryManagerVM[];
+  initialTransaction?: TransactionManagerVM;
   mode: "create" | "edit";
-  transactionId?: string;
-};
-
-type FormErrors = Partial<Record<keyof TransactionFormValues, string>> & {
-  form?: string;
 };
 
 function createInitialValues(
@@ -57,52 +54,44 @@ function toFormValues(transaction: TransactionManagerVM): TransactionFormValues 
   };
 }
 
-function isCategoryCompatible(
-  type: TransactionFormValues["type"],
-  category: CategoryManagerVM | undefined,
-) {
-  if (type === "transfer") {
-    return true;
-  }
-
-  return category?.type === type;
-}
-
 export function TransactionForm({
   accounts,
   categories,
+  initialTransaction,
   mode,
-  transactionId,
 }: Readonly<TransactionFormProps>) {
   const router = useRouter();
-  const { transactions, createTransaction, updateTransaction } =
-    useTransactionStore();
-  const existingTransaction =
-    mode === "edit"
-      ? transactions.find((transaction) => transaction.id === transactionId)
-      : undefined;
-
   const [values, setValues] = useState<TransactionFormValues>(() =>
-    existingTransaction
-      ? toFormValues(existingTransaction)
+    initialTransaction
+      ? toFormValues(initialTransaction)
       : createInitialValues(accounts, categories),
   );
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [formState, formAction, isSaving] = useActionState(
+    submitTransaction,
+    initialTransactionFormState,
+  );
+  const errors = showFeedback ? formState.errors : undefined;
+
+  async function submitTransaction(
+    previousState: typeof initialTransactionFormState,
+    formData: FormData,
+  ) {
+    const result = await saveTransaction(previousState, formData);
+    setShowFeedback(true);
+
+    if (result.status === "success") {
+      router.push("/transactions");
+    }
+
+    return result;
+  }
 
   if (accounts.length === 0) {
     return (
       <EmptyState
         title="Add an account before entering transactions"
         description="Transactions depend on at least one account. Create an account first, then return here."
-      />
-    );
-  }
-
-  if (mode === "edit" && !existingTransaction) {
-    return (
-      <EmptyState
-        title="Transaction not found"
-        description="This transaction could not be loaded from the mock store. Return to the transaction list and choose another item."
       />
     );
   }
@@ -116,6 +105,7 @@ export function TransactionForm({
     key: Key,
     value: TransactionFormValues[Key],
   ) {
+    setShowFeedback(false);
     setValues((current) => {
       const nextValues = {
         ...current,
@@ -133,103 +123,6 @@ export function TransactionForm({
 
       return nextValues;
     });
-  }
-
-  function validate() {
-    const nextErrors: FormErrors = {};
-    const amountNumber = Number(values.amount);
-    const category = categories.find(
-      (candidate) => candidate.id === values.categoryId,
-    );
-
-    if (!values.accountId) {
-      nextErrors.accountId = "Select an account.";
-    }
-
-    if (Number.isNaN(amountNumber) || amountNumber <= 0) {
-      nextErrors.amount = "Amount must be greater than zero.";
-    }
-
-    if (!values.date) {
-      nextErrors.date = "Date is required.";
-    }
-
-    if (values.type !== "transfer" && !values.categoryId) {
-      nextErrors.categoryId = "Select a category.";
-    }
-
-    if (
-      values.type !== "transfer" &&
-      values.categoryId &&
-      !isCategoryCompatible(values.type, category)
-    ) {
-      nextErrors.categoryId = "Category must match the transaction type.";
-    }
-
-    if (
-      values.type === "expense" &&
-      values.merchant.trim().length === 0 &&
-      values.description.trim().length === 0
-    ) {
-      nextErrors.merchant =
-        "Add a merchant or description for expense transactions.";
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  }
-
-  function saveTransaction() {
-    if (!validate()) {
-      return;
-    }
-
-    const account = accounts.find((candidate) => candidate.id === values.accountId);
-    const category = categories.find(
-      (candidate) => candidate.id === values.categoryId,
-    );
-
-    if (!account) {
-      setErrors({ form: "Selected account is unavailable." });
-      return;
-    }
-
-    const amountCents = Math.round(Number(values.amount) * 100);
-    const signedAmountCents =
-      values.type === "expense" ? -amountCents : amountCents;
-
-    const nextTransaction: TransactionManagerVM = {
-      id:
-        mode === "edit" && existingTransaction
-          ? existingTransaction.id
-          : `txn-${Math.random().toString(36).slice(2, 10)}`,
-      accountId: account.id,
-      accountName: account.name,
-      amountCents: signedAmountCents,
-      amountDisplay: formatCurrencyFromCents(signedAmountCents),
-      categoryId: values.type === "transfer" ? null : category?.id ?? null,
-      categoryName:
-        values.type === "transfer"
-          ? "Transfer"
-          : category?.name ?? "Uncategorized",
-      date: values.date,
-      dateDisplay: new Date(values.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      description: values.description.trim(),
-      merchant: values.merchant.trim(),
-      notes: values.notes.trim(),
-      type: values.type,
-    };
-
-    if (mode === "edit" && existingTransaction) {
-      updateTransaction(nextTransaction);
-    } else {
-      createTransaction(nextTransaction);
-    }
-
-    router.push("/transactions");
   }
 
   return (
@@ -251,11 +144,14 @@ export function TransactionForm({
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <form action={formAction} className="mt-6">
+        <input name="id" type="hidden" value={initialTransaction?.id ?? ""} />
+        <div className="grid gap-4 lg:grid-cols-2">
         <label className="space-y-2">
           <span className="text-sm font-semibold text-ink">Type</span>
           <select
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            name="type"
             onChange={(event) =>
               updateValue(
                 "type",
@@ -268,12 +164,16 @@ export function TransactionForm({
             <option value="income">Income</option>
             <option value="transfer">Transfer</option>
           </select>
+          {errors?.type ? (
+            <p className="text-sm text-negative">{errors.type}</p>
+          ) : null}
         </label>
 
         <label className="space-y-2">
           <span className="text-sm font-semibold text-ink">Account</span>
           <select
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            name="accountId"
             onChange={(event) => updateValue("accountId", event.target.value)}
             value={values.accountId}
           >
@@ -283,7 +183,7 @@ export function TransactionForm({
               </option>
             ))}
           </select>
-          {errors.accountId ? (
+          {errors?.accountId ? (
             <p className="text-sm text-negative">{errors.accountId}</p>
           ) : null}
         </label>
@@ -293,6 +193,7 @@ export function TransactionForm({
           <select
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             disabled={values.type === "transfer"}
+            name="categoryId"
             onChange={(event) => updateValue("categoryId", event.target.value)}
             value={values.categoryId}
           >
@@ -306,7 +207,7 @@ export function TransactionForm({
               ))
             )}
           </select>
-          {errors.categoryId ? (
+          {errors?.categoryId ? (
             <p className="text-sm text-negative">{errors.categoryId}</p>
           ) : null}
         </label>
@@ -316,11 +217,12 @@ export function TransactionForm({
           <input
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
             inputMode="decimal"
+            name="amount"
             onChange={(event) => updateValue("amount", event.target.value)}
             placeholder="0.00"
             value={values.amount}
           />
-          {errors.amount ? (
+          {errors?.amount ? (
             <p className="text-sm text-negative">{errors.amount}</p>
           ) : null}
         </label>
@@ -329,11 +231,13 @@ export function TransactionForm({
           <span className="text-sm font-semibold text-ink">Merchant</span>
           <input
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            maxLength={160}
+            name="merchant"
             onChange={(event) => updateValue("merchant", event.target.value)}
             placeholder="Park View Apartments"
             value={values.merchant}
           />
-          {errors.merchant ? (
+          {errors?.merchant ? (
             <p className="text-sm text-negative">{errors.merchant}</p>
           ) : null}
         </label>
@@ -342,47 +246,62 @@ export function TransactionForm({
           <span className="text-sm font-semibold text-ink">Description</span>
           <input
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            maxLength={240}
+            name="description"
             onChange={(event) => updateValue("description", event.target.value)}
             placeholder="Monthly rent"
             value={values.description}
           />
+          {errors?.description ? (
+            <p className="text-sm text-negative">{errors.description}</p>
+          ) : null}
         </label>
 
         <label className="space-y-2">
           <span className="text-sm font-semibold text-ink">Date</span>
           <input
             className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            name="date"
             onChange={(event) => updateValue("date", event.target.value)}
             type="date"
             value={values.date}
           />
-          {errors.date ? <p className="text-sm text-negative">{errors.date}</p> : null}
+          {errors?.date ? <p className="text-sm text-negative">{errors.date}</p> : null}
         </label>
 
         <label className="space-y-2 lg:col-span-2">
           <span className="text-sm font-semibold text-ink">Notes</span>
           <textarea
             className="min-h-28 w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+            maxLength={2000}
+            name="notes"
             onChange={(event) => updateValue("notes", event.target.value)}
             placeholder="Optional notes for this transaction"
             value={values.notes}
           />
+          {errors?.notes ? (
+            <p className="text-sm text-negative">{errors.notes}</p>
+          ) : null}
         </label>
-      </div>
+        </div>
 
-      {errors.form ? (
+      {showFeedback && formState.status === "error" && formState.message ? (
         <p className="mt-4 rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
-          {errors.form}
+          {formState.message}
         </p>
       ) : null}
 
       <div className="mt-6 flex flex-wrap gap-3">
         <button
-          className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-          onClick={saveTransaction}
-          type="button"
+          className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+          disabled={isSaving}
+          type="submit"
         >
-          {mode === "edit" ? "Save transaction" : "Create transaction"}
+          {isSaving
+            ? "Saving…"
+            : mode === "edit"
+              ? "Save transaction"
+              : "Create transaction"}
         </button>
         <Link
           className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
@@ -391,6 +310,7 @@ export function TransactionForm({
           Cancel
         </Link>
       </div>
+      </form>
     </SectionCard>
   );
 }

@@ -1,16 +1,20 @@
 import { PageHeader } from "@/shared/components/page-header";
 import { AccountsManager } from "@/features/accounts/components/accounts-manager.client";
-import { mockAccountManagerItems } from "@/mocks/finance";
+import { getAccountManagerItems } from "@/features/accounts/account.queries";
+import { requireCurrentUser } from "@/server/auth/session";
 
-export default function AccountsPage() {
+export default async function AccountsPage() {
+  const user = await requireCurrentUser();
+  const accounts = await getAccountManagerItems(user.id);
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Accounts"
         title="Manage where money lives"
-        description="Accounts anchor every transaction. This phase adds mock CRUD behavior, balance visibility, and deletion constraints so the next transaction phase can rely on a stable account surface."
+        description="Create and manage persisted accounts, review balance visibility, and keep transaction history protected with user-scoped deletion constraints."
       />
-      <AccountsManager initialAccounts={mockAccountManagerItems} />
+      <AccountsManager initialAccounts={accounts} />
     </div>
   );
 }

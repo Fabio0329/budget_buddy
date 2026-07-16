@@ -1,22 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue } from "react";
+import {
+  startTransition,
+  useDeferredValue,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { deleteTransaction } from "@/features/transactions/transaction.actions";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
-import { useTransactionStore } from "@/features/transactions/transaction.store";
 import type {
   AccountManagerVM,
   CategoryManagerVM,
   TransactionFilterState,
+  TransactionManagerVM,
 } from "@/shared/types/view-models";
 
 type TransactionsManagerProps = {
   accounts: AccountManagerVM[];
   categories: CategoryManagerVM[];
   initialFilters: TransactionFilterState;
+  initialTransactions: TransactionManagerVM[];
 };
 
 function parseAmount(value: string | null) {
@@ -32,13 +39,25 @@ export function TransactionsManager({
   accounts,
   categories,
   initialFilters,
+  initialTransactions,
 }: Readonly<TransactionsManagerProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { transactions, deleteTransaction } = useTransactionStore();
+  const transactions = initialTransactions;
   const deferredQuery = useDeferredValue(initialFilters.query);
   const hasAccounts = accounts.length > 0;
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
+
+  function removeTransaction(id: string) {
+    startDeleteTransition(async () => {
+      const result = await deleteTransaction(id);
+      setError(result.status === "error" ? (result.message ?? null) : null);
+      setNotice(result.status === "success" ? (result.message ?? null) : null);
+    });
+  }
 
   function replaceSearchParam(name: string, value: string | null) {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -302,6 +321,18 @@ export function TransactionsManager({
         </div>
       </SectionCard>
 
+      {error ? (
+        <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+          {error}
+        </p>
+      ) : null}
+
+      {notice ? (
+        <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+          {notice}
+        </p>
+      ) : null}
+
       {filteredTransactions.length > 0 ? (
         <SectionCard className="overflow-hidden p-0">
           <div className="hidden grid-cols-[96px_1.1fr_0.8fr_0.8fr_130px_140px] gap-4 border-b border-line bg-white/70 px-6 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted lg:grid">
@@ -379,8 +410,9 @@ export function TransactionsManager({
                       Edit
                     </Link>
                     <button
-                      className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
-                      onClick={() => deleteTransaction(transaction.id)}
+                      className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
+                      disabled={isDeleting}
+                      onClick={() => removeTransaction(transaction.id)}
                       type="button"
                     >
                       Delete

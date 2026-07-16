@@ -8,7 +8,7 @@ export function DashboardMonthSwitcher({
   months: Array<{ label: string; value: string }>;
 }>) {
   return (
-    <form>
+    <form className="w-fit self-end">
       <label className="flex items-center gap-3 rounded-full border border-line bg-white/60 px-4 py-2 text-sm text-muted">
         <span className="font-semibold text-ink">Month</span>
         <select

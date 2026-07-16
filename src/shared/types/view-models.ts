@@ -76,7 +76,7 @@ export type DashboardMonthVM = {
   recentTransactions: TransactionListVM[];
   budgets: BudgetProgressVM[];
   upcomingRecurring: UpcomingRecurringVM[];
-  goal: GoalProgressVM;
+  goal: GoalProgressVM | null;
 };
 
 export type AccountSummaryVM = {
@@ -116,6 +116,7 @@ export type CategoryManagerVM = {
   type: "income" | "expense";
   color: string;
   iconToken: string;
+  linkedBudgetCount: number;
   linkedTransactionCount: number;
   monthlyAverageCents: number;
   monthlyAverageDisplay: string;

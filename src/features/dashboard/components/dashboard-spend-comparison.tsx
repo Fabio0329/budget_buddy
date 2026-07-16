@@ -6,7 +6,10 @@ export function DashboardSpendComparison({
 }: Readonly<{
   bars: IncomeExpenseBarVM[];
 }>) {
-  const maxValue = Math.max(...bars.map((bar) => Math.max(bar.income, bar.expense)));
+  const maxValue = Math.max(
+    ...bars.map((bar) => Math.max(bar.income, bar.expense)),
+    1,
+  );
 
   return (
     <SectionCard className="p-6">

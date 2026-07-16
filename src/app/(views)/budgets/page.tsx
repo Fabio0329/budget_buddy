@@ -1,5 +1,11 @@
 import { PageHeader } from "@/shared/components/page-header";
 import { BudgetsManager } from "@/features/budgets/components/budgets-manager.client";
+import {
+  getBudgetMonthOptions,
+  getBudgetOverviewItems,
+} from "@/features/budgets/budget.queries";
+import { parseBudgetMonth } from "@/features/budgets/budget.validation";
+import { requireCurrentUser } from "@/server/auth/session";
 
 type BudgetsPageProps = {
   searchParams: Promise<{
@@ -9,15 +15,32 @@ type BudgetsPageProps = {
 
 export default async function BudgetsPage({ searchParams }: BudgetsPageProps) {
   const params = await searchParams;
+  const user = await requireCurrentUser();
+  const now = new Date();
+  const fallbackMonth = `${now.getUTCFullYear()}-${String(
+    now.getUTCMonth() + 1,
+  ).padStart(2, "0")}`;
+  const requestedMonth = params.month ?? fallbackMonth;
+  const parsedMonth = parseBudgetMonth(requestedMonth);
+  const selectedMonth = parsedMonth ? requestedMonth : fallbackMonth;
+  const selected = parsedMonth ?? parseBudgetMonth(fallbackMonth)!;
+  const [budgets, monthOptions] = await Promise.all([
+    getBudgetOverviewItems(user.id, selected.year, selected.month),
+    getBudgetMonthOptions(user.id, selectedMonth),
+  ]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Budgets"
         title="Compare planned versus actual spending"
-        description="This phase adds month-scoped budget management, derived spending progress from transaction activity, and create/edit flows for category limits."
+        description="Manage persisted monthly limits and compare them with user-scoped expense activity calculated directly from your transactions."
       />
-      <BudgetsManager initialMonth={params.month ?? "2026-07"} />
+      <BudgetsManager
+        initialBudgets={budgets}
+        monthOptions={monthOptions}
+        selectedMonth={selectedMonth}
+      />
     </div>
   );
 }

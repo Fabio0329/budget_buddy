@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState, useTransition } from "react";
+import {
+  deleteAccount as deleteAccountAction,
+  saveAccount,
+} from "@/features/accounts/account.actions";
+import { initialAccountFormState } from "@/features/accounts/account-form-state";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
@@ -40,19 +45,6 @@ function formatAccountType(type: string) {
     .join(" ");
 }
 
-function parseCurrencyInput(value: string) {
-  if (value.trim() === "") {
-    return 0;
-  }
-
-  const normalized = Number(value.replace(/[$,\s]/g, ""));
-  if (Number.isNaN(normalized)) {
-    return null;
-  }
-
-  return Math.round(normalized * 100);
-}
-
 function createDraft(account: AccountManagerVM): AccountDraft {
   return {
     currentBalance: (account.currentBalanceCents / 100).toFixed(2),
@@ -68,7 +60,7 @@ export function AccountsManager({
 }: Readonly<{
   initialAccounts: AccountManagerVM[];
 }>) {
-  const [accounts, setAccounts] = useState(initialAccounts);
+  const accounts = initialAccounts;
   const [selectedId, setSelectedId] = useState<string | null>(
     initialAccounts[0]?.id ?? null,
   );
@@ -80,6 +72,12 @@ export function AccountsManager({
   );
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showFormFeedback, setShowFormFeedback] = useState(false);
+  const [formState, formAction, isSaving] = useActionState(
+    submitAccount,
+    initialAccountFormState,
+  );
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   const selectedAccount =
     mode === "edit"
@@ -94,11 +92,30 @@ export function AccountsManager({
     (sum, account) => sum + account.linkedTransactionCount,
     0,
   );
+  const fieldErrors = showFormFeedback ? formState.errors : undefined;
+
+  async function submitAccount(
+    previousState: typeof initialAccountFormState,
+    formData: FormData,
+  ) {
+    const result = await saveAccount(previousState, formData);
+    setShowFormFeedback(true);
+    setError(result.status === "error" ? (result.message ?? null) : null);
+    setNotice(result.status === "success" ? (result.message ?? null) : null);
+
+    if (result.status === "success" && result.entityId) {
+      setMode("edit");
+      setSelectedId(result.entityId);
+    }
+
+    return result;
+  }
 
   function resetForCreate() {
     setMode("create");
     setSelectedId(null);
     setDraft(emptyDraft);
+    setShowFormFeedback(false);
     setError(null);
     setNotice(null);
   }
@@ -107,6 +124,7 @@ export function AccountsManager({
     setMode("edit");
     setSelectedId(account.id);
     setDraft(createDraft(account));
+    setShowFormFeedback(false);
     setError(null);
     setNotice(null);
   }
@@ -115,82 +133,11 @@ export function AccountsManager({
     key: Key,
     value: AccountDraft[Key],
   ) {
+    setShowFormFeedback(false);
     setDraft((current) => ({
       ...current,
       [key]: value,
     }));
-  }
-
-  function saveAccount() {
-    const name = draft.name.trim();
-    const institution = draft.institution.trim();
-    const startingBalanceCents = parseCurrencyInput(draft.startingBalance);
-    const currentBalanceCents = parseCurrencyInput(draft.currentBalance);
-
-    if (!name) {
-      setError("Account name is required.");
-      return;
-    }
-
-    if (!institution) {
-      setError("Institution or source is required.");
-      return;
-    }
-
-    if (startingBalanceCents === null || currentBalanceCents === null) {
-      setError("Balances must be valid numbers.");
-      return;
-    }
-
-    if (mode === "edit" && selectedAccount) {
-      setAccounts((current) =>
-        current.map((account) =>
-          account.id === selectedAccount.id
-            ? {
-                ...account,
-                currentBalanceCents,
-                currentBalanceDisplay: formatCurrencyFromCents(
-                  currentBalanceCents,
-                ),
-                institution,
-                name,
-                note:
-                  currentBalanceCents < 0
-                    ? "Balance is below zero and should be reviewed."
-                    : account.note,
-                startingBalanceCents,
-                startingBalanceDisplay: formatCurrencyFromCents(
-                  startingBalanceCents,
-                ),
-                type: draft.type,
-              }
-            : account,
-        ),
-      );
-      setNotice("Account updated.");
-    } else {
-      const nextAccount: AccountManagerVM = {
-        id: `acct-${Math.random().toString(36).slice(2, 8)}`,
-        currentBalanceCents,
-        currentBalanceDisplay: formatCurrencyFromCents(currentBalanceCents),
-        institution,
-        lastUpdatedLabel: "Just now",
-        linkedTransactionCount: 0,
-        name,
-        note: "New account ready for transaction setup.",
-        startingBalanceCents,
-        startingBalanceDisplay: formatCurrencyFromCents(startingBalanceCents),
-        status: currentBalanceCents < 0 ? "warning" : "healthy",
-        type: draft.type,
-      };
-      setAccounts((current) => [nextAccount, ...current]);
-      setMode("edit");
-      setSelectedId(nextAccount.id);
-      setDraft(createDraft(nextAccount));
-      setNotice("Account created.");
-    }
-
-    setError(null);
   }
 
   function deleteAccount(account: AccountManagerVM) {
@@ -202,17 +149,24 @@ export function AccountsManager({
       return;
     }
 
-    const remaining = accounts.filter((entry) => entry.id !== account.id);
-    setAccounts(remaining);
-    setNotice("Account removed.");
-    setError(null);
+    startDeleteTransition(async () => {
+      const result = await deleteAccountAction(account.id);
+      setError(result.status === "error" ? (result.message ?? null) : null);
+      setNotice(result.status === "success" ? (result.message ?? null) : null);
 
-    if (remaining.length === 0) {
-      resetForCreate();
-      return;
-    }
+      if (result.status !== "success") return;
 
-    selectAccount(remaining[0]);
+      const remaining = accounts.filter((entry) => entry.id !== account.id);
+      if (remaining.length === 0) {
+        setMode("create");
+        setSelectedId(null);
+        setDraft(emptyDraft);
+      } else if (selectedId === account.id) {
+        setMode("edit");
+        setSelectedId(remaining[0].id);
+        setDraft(createDraft(remaining[0]));
+      }
+    });
   }
 
   return (
@@ -360,7 +314,9 @@ export function AccountsManager({
                         </button>
                         <button
                           className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
-                          disabled={account.linkedTransactionCount > 0}
+                          disabled={
+                            account.linkedTransactionCount > 0 || isDeleting
+                          }
                           onClick={() => deleteAccount(account)}
                           type="button"
                         >
@@ -389,17 +345,29 @@ export function AccountsManager({
               ? selectedAccount?.name ?? "Account details"
               : "Add a new account"}
           </h2>
-          <div className="mt-6 grid gap-4">
+          <form action={formAction} className="mt-6 grid gap-4">
+            <input
+              name="id"
+              type="hidden"
+              value={mode === "edit" ? (selectedAccount?.id ?? "") : ""}
+            />
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">
                 Account name
               </span>
               <input
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                maxLength={100}
+                name="name"
                 onChange={(event) => updateDraft("name", event.target.value)}
                 placeholder="Primary Checking"
                 value={draft.name}
               />
+              {fieldErrors?.name ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.name}
+                </span>
+              ) : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">
@@ -407,17 +375,25 @@ export function AccountsManager({
               </span>
               <input
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                maxLength={120}
+                name="institution"
                 onChange={(event) =>
                   updateDraft("institution", event.target.value)
                 }
                 placeholder="Northline Credit Union"
                 value={draft.institution}
               />
+              {fieldErrors?.institution ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.institution}
+                </span>
+              ) : null}
             </label>
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Type</span>
               <select
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                name="type"
                 onChange={(event) =>
                   updateDraft("type", event.target.value as AccountType)
                 }
@@ -429,6 +405,11 @@ export function AccountsManager({
                   </option>
                 ))}
               </select>
+              {fieldErrors?.type ? (
+                <span className="block text-sm text-negative">
+                  {fieldErrors.type}
+                </span>
+              ) : null}
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2">
@@ -437,12 +418,19 @@ export function AccountsManager({
                 </span>
                 <input
                   className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                  inputMode="decimal"
+                  name="startingBalance"
                   onChange={(event) =>
                     updateDraft("startingBalance", event.target.value)
                   }
                   placeholder="0.00"
                   value={draft.startingBalance}
                 />
+                {fieldErrors?.startingBalance ? (
+                  <span className="block text-sm text-negative">
+                    {fieldErrors.startingBalance}
+                  </span>
+                ) : null}
               </label>
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-ink">
@@ -450,12 +438,19 @@ export function AccountsManager({
                 </span>
                 <input
                   className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                  inputMode="decimal"
+                  name="currentBalance"
                   onChange={(event) =>
                     updateDraft("currentBalance", event.target.value)
                   }
                   placeholder="0.00"
                   value={draft.currentBalance}
                 />
+                {fieldErrors?.currentBalance ? (
+                  <span className="block text-sm text-negative">
+                    {fieldErrors.currentBalance}
+                  </span>
+                ) : null}
               </label>
             </div>
 
@@ -473,11 +468,15 @@ export function AccountsManager({
 
             <div className="flex flex-wrap gap-3 pt-2">
               <button
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-                onClick={saveAccount}
-                type="button"
+                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                disabled={isSaving}
+                type="submit"
               >
-                {mode === "edit" ? "Save changes" : "Create account"}
+                {isSaving
+                  ? "Saving…"
+                  : mode === "edit"
+                    ? "Save changes"
+                    : "Create account"}
               </button>
               <button
                 className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
@@ -487,7 +486,7 @@ export function AccountsManager({
                 New account
               </button>
             </div>
-          </div>
+          </form>
         </SectionCard>
       </div>
     </div>
