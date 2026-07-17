@@ -58,6 +58,39 @@ npm run db:validate
 npm run db:studio
 ```
 
+## Continuous integration and preview deployments
+
+Pull requests targeting `main` run the GitHub Actions quality gates in
+`.github/workflows/ci.yml`: dependency installation, Prisma client generation
+and schema validation, ESLint, TypeScript checking, and a production Next.js
+build. Pushes to `main` run the same validation. Run the complete sequence
+locally with:
+
+```bash
+npm run ci
+```
+
+After the quality gates pass, each non-draft pull request is deployed to the
+Vercel Preview environment. Configure a GitHub environment named `preview`
+with these secrets before enabling the workflow:
+
+- `VERCEL_TOKEN`: a Vercel access token
+- `VERCEL_ORG_ID`: the `orgId` produced by `vercel link`
+- `VERCEL_PROJECT_ID`: the `projectId` produced by `vercel link`
+
+Configure `DATABASE_URL`, `DIRECT_URL`, and `AUTH_RATE_LIMIT_SECRET` in the
+Vercel project's Preview environment. Leave `APP_URL` unset for previews so
+the app uses the deployment-specific `VERCEL_URL`. Preview deployments should
+use an isolated non-production database because the app can create and modify
+financial records. For security, preview deployment is skipped for pull
+requests from forks; their quality gates still run. The custom GitHub Actions
+deployment is the preview deployment owner, so disable Vercel's parallel
+automatic Git deployments to avoid duplicate previews.
+
+Protect `main` in GitHub and require the `Quality gates` check before merging.
+Production deployment and migration automation are reserved for the next
+deployment phase.
+
 ## Project structure
 
 ```text
