@@ -5,6 +5,7 @@ import type { BudgetFormState } from "@/features/budgets/budget-form-state";
 import { validateBudgetForm } from "@/features/budgets/budget.validation";
 import { requireCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db/client";
+import { reportServerError } from "@/server/observability/logger";
 
 function isUniqueConstraintError(error: unknown) {
   return (
@@ -94,7 +95,7 @@ export async function saveBudget(
       };
     }
 
-    console.error("Saving budget failed", error);
+    reportServerError("budget.save.failed", error);
     return {
       message: "We could not save this budget right now. Please try again.",
       status: "error",
@@ -115,7 +116,7 @@ export async function deleteBudget(id: string): Promise<BudgetFormState> {
     refreshBudgetConsumers();
     return { entityId: id, message: "Budget removed.", status: "success" };
   } catch (error) {
-    console.error("Deleting budget failed", error);
+    reportServerError("budget.delete.failed", error);
     return {
       message: "We could not remove this budget right now. Please try again.",
       status: "error",

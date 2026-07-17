@@ -5,6 +5,7 @@ import type { CategoryFormState } from "@/features/categories/category-form-stat
 import { validateCategoryForm } from "@/features/categories/category.validation";
 import { requireCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db/client";
+import { reportServerError } from "@/server/observability/logger";
 
 function isUniqueConstraintError(error: unknown) {
   return (
@@ -94,7 +95,7 @@ export async function saveCategory(
       };
     }
 
-    console.error("Saving category failed", error);
+    reportServerError("category.save.failed", error);
     return {
       message: "We could not save this category right now. Please try again.",
       status: "error",
@@ -127,7 +128,7 @@ export async function deleteCategory(id: string): Promise<CategoryFormState> {
     refreshCategoryConsumers();
     return { entityId: id, message: "Category removed.", status: "success" };
   } catch (error) {
-    console.error("Deleting category failed", error);
+    reportServerError("category.delete.failed", error);
     return {
       message: "We could not remove this category right now. Please try again.",
       status: "error",

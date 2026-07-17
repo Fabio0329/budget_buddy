@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE, SESSION_TTL_SECONDS } from "@/server/auth/constants";
 import { db } from "@/server/db/client";
+import { getAppUrl } from "@/server/config/app-url";
 import type { AppUserVM } from "@/shared/types/view-models";
 
 function createInitials(name: string) {
@@ -108,7 +109,7 @@ export function normalizeRedirectTarget(value: FormDataEntryValue | null) {
   }
 
   try {
-    const baseUrl = new URL("https://budget-buddy.local");
+    const baseUrl = getAppUrl();
     const targetUrl = new URL(value, baseUrl);
 
     if (targetUrl.origin !== baseUrl.origin) {

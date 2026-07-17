@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ScrollReset } from "@/shared/components/scroll-reset";
+import { getAppUrl } from "@/server/config/app-url";
 import "./globals.css";
 
 const geist = localFont({
@@ -12,7 +13,7 @@ const geist = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://budget-buddy.local"),
+  metadataBase: getAppUrl(),
   title: {
     default: "Budget Buddy",
     template: "%s | Budget Buddy",
