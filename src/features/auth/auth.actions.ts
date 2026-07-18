@@ -8,7 +8,13 @@ import {
   normalizeRedirectTarget,
 } from "@/server/auth/session";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
+import {
+  AuthRateLimitExceededError,
+  enforceLoginRateLimit,
+  enforceSignupRateLimit,
+} from "@/server/auth/rate-limit";
 import { db } from "@/server/db/client";
+import { reportServerError } from "@/server/observability/logger";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,6 +53,16 @@ export async function login(
 
   const errors: NonNullable<AuthActionState["errors"]> = {};
 
+  try {
+    await enforceLoginRateLimit(email);
+  } catch (error) {
+    if (error instanceof AuthRateLimitExceededError) {
+      return { message: "Too many login attempts. Try again in a few minutes.", values: { email } };
+    }
+    reportServerError("auth.login.rate_limit_failed", error);
+    return { message: "We could not log you in right now. Please try again.", values: { email } };
+  }
+
   if (!validateEmail(email)) {
     errors.email = "Enter a valid email address.";
   }
@@ -79,7 +95,7 @@ export async function login(
 
     await createSession(user.id);
   } catch (error) {
-    console.error("Login failed", error);
+    reportServerError("auth.login.failed", error);
     return {
       message: "We could not log you in right now. Please try again.",
       values: { email },
@@ -99,6 +115,16 @@ export async function signup(
   const redirectTo = normalizeRedirectTarget(formData.get("redirectTo"));
 
   const errors: NonNullable<AuthActionState["errors"]> = {};
+
+  try {
+    await enforceSignupRateLimit(email);
+  } catch (error) {
+    if (error instanceof AuthRateLimitExceededError) {
+      return { message: "Too many signup attempts. Try again later.", values: { email, name } };
+    }
+    reportServerError("auth.signup.rate_limit_failed", error);
+    return { message: "We could not create your account right now. Please try again.", values: { email, name } };
+  }
 
   if (name.length < 2) {
     errors.name = "Name must be at least 2 characters.";
@@ -143,7 +169,7 @@ export async function signup(
       };
     }
 
-    console.error("Signup failed", error);
+    reportServerError("auth.signup.failed", error);
     return {
       message: "We could not create your account right now. Please try again.",
       values: { email, name },
@@ -157,7 +183,7 @@ export async function logout() {
   try {
     await deleteSession();
   } catch (error) {
-    console.error("Logout failed", error);
+    reportServerError("auth.logout.failed", error);
   }
 
   redirect("/login");

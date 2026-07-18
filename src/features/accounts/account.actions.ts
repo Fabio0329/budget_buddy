@@ -5,6 +5,7 @@ import type { AccountFormState } from "@/features/accounts/account-form-state";
 import { validateAccountForm } from "@/features/accounts/account.validation";
 import { requireCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db/client";
+import { reportServerError } from "@/server/observability/logger";
 
 function refreshAccountConsumers() {
   revalidatePath("/accounts");
@@ -56,7 +57,7 @@ export async function saveAccount(
       status: "success",
     };
   } catch (error) {
-    console.error("Saving account failed", error);
+    reportServerError("account.save.failed", error);
     return {
       message: "We could not save this account right now. Please try again.",
       status: "error",
@@ -89,7 +90,7 @@ export async function deleteAccount(id: string): Promise<AccountFormState> {
     refreshAccountConsumers();
     return { entityId: id, message: "Account removed.", status: "success" };
   } catch (error) {
-    console.error("Deleting account failed", error);
+    reportServerError("account.delete.failed", error);
     return {
       message: "We could not remove this account right now. Please try again.",
       status: "error",

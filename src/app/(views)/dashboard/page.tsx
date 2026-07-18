@@ -8,6 +8,8 @@ import { DashboardSpendComparison } from "@/features/dashboard/components/dashbo
 import { DashboardStatCard } from "@/features/dashboard/components/dashboard-stat-card";
 import { DashboardTransactionsList } from "@/features/dashboard/components/dashboard-transactions-list";
 import { getDashboardMonthData } from "@/features/dashboard/dashboard.queries";
+import { SampleDataCard } from "@/features/onboarding/components/sample-data-card.client";
+import { canLoadSampleData } from "@/features/onboarding/sample-data.actions";
 import { requireCurrentUser } from "@/server/auth/session";
 import type { ReactNode } from "react";
 
@@ -30,10 +32,10 @@ export default async function DashboardPage({
 }: DashboardPageProps) {
   const params = await searchParams;
   const user = await requireCurrentUser();
-  const { dashboard, months } = await getDashboardMonthData(
-    user.id,
-    params.month,
-  );
+  const [{ dashboard, months }, showSampleData] = await Promise.all([
+    getDashboardMonthData(user.id, params.month),
+    canLoadSampleData(user.id),
+  ]);
   const cards: DashboardCard[] = [
     {
       label: "Income",
@@ -85,6 +87,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-8">
+      {showSampleData ? <SampleDataCard /> : null}
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <PageHeader
           eyebrow="Dashboard"

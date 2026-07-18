@@ -12,6 +12,7 @@ import {
 } from "@/features/transactions/transaction.validation";
 import { requireCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db/client";
+import { reportServerError } from "@/server/observability/logger";
 
 function refreshTransactionConsumers() {
   revalidatePath("/transactions");
@@ -125,7 +126,7 @@ export async function saveTransaction(
       status: "success",
     };
   } catch (error) {
-    console.error("Saving transaction failed", error);
+    reportServerError("transaction.save.failed", error);
     return {
       message: "We could not save this transaction right now. Please try again.",
       status: "error",
@@ -162,7 +163,7 @@ export async function deleteTransaction(
     refreshTransactionConsumers();
     return { entityId: id, message: "Transaction removed.", status: "success" };
   } catch (error) {
-    console.error("Deleting transaction failed", error);
+    reportServerError("transaction.delete.failed", error);
     return {
       message: "We could not remove this transaction right now. Please try again.",
       status: "error",
@@ -310,7 +311,7 @@ export async function importTransactions(
       status: "success",
     };
   } catch (error) {
-    console.error("Importing transactions failed", error);
+    reportServerError("transaction.import.failed", error);
     return {
       message: "We could not import these transactions. Check their accounts and categories, then try again.",
       status: "error",

@@ -7,11 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "ci": "npm run db:generate && npm run db:validate && npm run lint && npm run typecheck && npm run build",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
