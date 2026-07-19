@@ -21,17 +21,17 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_URL: http://localhost:3000
-  AUTH_RATE_LIMIT_SECRET: ci-only-auth-rate-limit-secret
-  DATABASE_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
-  DIRECT_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
-
 jobs:
   quality:
     name: Quality gates
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    env:
+      APP_URL: http://localhost:3000
+      AUTH_RATE_LIMIT_SECRET: ci-only-auth-rate-limit-secret
+      DATABASE_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
+      DIRECT_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
 
     steps:
       - name: Check out repository
