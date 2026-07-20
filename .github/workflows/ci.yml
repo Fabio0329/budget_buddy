@@ -67,6 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -110,3 +113,11 @@ jobs:
         run: |
           echo "### Preview deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "[$DEPLOYMENT_URL]($DEPLOYMENT_URL)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: vercel-preview
+          message: |
+            ### ▲ Vercel preview deployed
+            [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})
