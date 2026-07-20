@@ -21,17 +21,17 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_URL: http://localhost:3000
-  AUTH_RATE_LIMIT_SECRET: ci-only-auth-rate-limit-secret
-  DATABASE_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
-  DIRECT_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
-
 jobs:
   quality:
     name: Quality gates
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    env:
+      APP_URL: http://localhost:3000
+      AUTH_RATE_LIMIT_SECRET: ci-only-auth-rate-limit-secret
+      DATABASE_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
+      DIRECT_URL: postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy
 
     steps:
       - name: Check out repository
@@ -67,6 +67,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -94,6 +97,13 @@ jobs:
       - name: Build Vercel artifacts
         run: npx --yes vercel@latest build --token="$VERCEL_TOKEN"
 
+      - name: Apply preview database migrations
+        run: |
+          set -a
+          source .vercel/.env.preview.local
+          set +a
+          npm run db:deploy
+
       - name: Deploy preview
         id: deploy
         run: |
@@ -106,3 +116,11 @@ jobs:
         run: |
           echo "### Preview deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "[$DEPLOYMENT_URL]($DEPLOYMENT_URL)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: vercel-preview
+          message: |
+            ### ▲ Vercel preview deployed
+            [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})
