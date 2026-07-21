@@ -13,11 +13,15 @@ const statusLabelMap: Record<BudgetProgressVM["status"], string> = {
   over: "Over budget",
 };
 
+export interface DashboardBudgetListProps {
+  readonly budgets: BudgetProgressVM[];
+  readonly periodLabel?: string;
+}
+
 export function DashboardBudgetList({
   budgets,
-}: Readonly<{
-  budgets: BudgetProgressVM[];
-}>) {
+  periodLabel = "Current month",
+}: DashboardBudgetListProps) {
   return (
     <SectionCard className="p-6">
       <div className="flex items-start justify-between gap-4">
@@ -30,7 +34,7 @@ export function DashboardBudgetList({
           </h2>
         </div>
         <span className="rounded-full border border-line bg-white/70 px-3 py-1 text-xs font-semibold text-muted">
-          Current month
+          {periodLabel}
         </span>
       </div>
 

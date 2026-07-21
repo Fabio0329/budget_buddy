@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useActionState,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import {
   deleteCategory as deleteCategoryAction,
   saveCategory,
@@ -14,6 +9,7 @@ import { initialCategoryFormState } from "@/features/categories/category-form-st
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
+import type { ReadOnlyInteractionMode } from "@/shared/types/interaction-mode";
 import type { CategoryManagerVM } from "@/shared/types/view-models";
 
 const colorChoices = [
@@ -30,6 +26,11 @@ type CategoryDraft = {
   name: string;
   type: "income" | "expense";
 };
+
+export interface CategoriesManagerProps {
+  readonly initialCategories: CategoryManagerVM[];
+  readonly readOnlyMode?: ReadOnlyInteractionMode;
+}
 
 const emptyDraft: CategoryDraft = {
   color: colorChoices[0].value,
@@ -49,9 +50,8 @@ function createDraft(category: CategoryManagerVM): CategoryDraft {
 
 export function CategoriesManager({
   initialCategories,
-}: Readonly<{
-  initialCategories: CategoryManagerVM[];
-}>) {
+  readOnlyMode,
+}: CategoriesManagerProps) {
   const categories = initialCategories;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<CategoryDraft>(emptyDraft);
@@ -67,7 +67,7 @@ export function CategoriesManager({
 
   const selectedCategory =
     mode === "edit"
-      ? categories.find((category) => category.id === selectedId) ?? null
+      ? (categories.find((category) => category.id === selectedId) ?? null)
       : null;
 
   const grouped = useMemo(
@@ -83,6 +83,13 @@ export function CategoriesManager({
     previousState: typeof initialCategoryFormState,
     formData: FormData,
   ) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction(
+        mode === "edit" ? "Editing a category" : "Adding a category",
+      );
+      return previousState;
+    }
+
     const result = await saveCategory(previousState, formData);
     setShowFormFeedback(true);
     setError(result.status === "error" ? (result.message ?? null) : null);
@@ -97,6 +104,11 @@ export function CategoriesManager({
   }
 
   function resetForCreate(type: "income" | "expense" = "expense") {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction(`Adding an ${type} category`);
+      return;
+    }
+
     setMode("create");
     setSelectedId(null);
     setDraft({
@@ -109,6 +121,11 @@ export function CategoriesManager({
   }
 
   function selectCategory(category: CategoryManagerVM) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Editing a category");
+      return;
+    }
+
     setMode("edit");
     setSelectedId(category.id);
     setDraft(createDraft(category));
@@ -129,10 +146,12 @@ export function CategoriesManager({
   }
 
   function deleteCategory(category: CategoryManagerVM) {
-    if (
-      category.linkedTransactionCount > 0 ||
-      category.linkedBudgetCount > 0
-    ) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Deleting a category");
+      return;
+    }
+
+    if (category.linkedTransactionCount > 0 || category.linkedBudgetCount > 0) {
       setError(
         "This category is still linked to transactions or budgets. Remove those links first or keep the category.",
       );
@@ -230,12 +249,12 @@ export function CategoriesManager({
           {(["expense", "income"] as const).map((type) => (
             <SectionCard key={type} className="p-6">
               <p className="eyebrow text-[11px] font-semibold text-accent">
-                {type === "expense" ? "Expense categories" : "Income categories"}
+                {type === "expense"
+                  ? "Expense categories"
+                  : "Income categories"}
               </p>
               <h2 className="section-title mt-2 text-3xl text-ink">
-                {type === "expense"
-                  ? "Spending buckets"
-                  : "Sources of income"}
+                {type === "expense" ? "Spending buckets" : "Sources of income"}
               </h2>
               <div className="mt-6 space-y-3">
                 {grouped[type].length > 0 ? (
@@ -266,7 +285,8 @@ export function CategoriesManager({
                               </p>
                               <p className="mt-1 text-sm text-muted">
                                 {category.linkedTransactionCount} linked
-                                transactions · {category.linkedBudgetCount} budgets
+                                transactions · {category.linkedBudgetCount}{" "}
+                                budgets
                               </p>
                             </div>
                           </div>
@@ -303,8 +323,9 @@ export function CategoriesManager({
                           <button
                             className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
                             disabled={
-                              category.linkedTransactionCount > 0 ||
-                              category.linkedBudgetCount > 0 ||
+                              (!readOnlyMode &&
+                                (category.linkedTransactionCount > 0 ||
+                                  category.linkedBudgetCount > 0)) ||
                               isDeleting
                             }
                             onClick={() => deleteCategory(category)}
@@ -333,7 +354,7 @@ export function CategoriesManager({
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
             {mode === "edit"
-              ? selectedCategory?.name ?? "Category details"
+              ? (selectedCategory?.name ?? "Category details")
               : "Add a category"}
           </h2>
           <form action={formAction} className="mt-6 grid gap-4">
@@ -403,9 +424,7 @@ export function CategoriesManager({
               ) : null}
             </label>
             <label className="space-y-2">
-              <span className="text-sm font-semibold text-ink">
-                Icon token
-              </span>
+              <span className="text-sm font-semibold text-ink">Icon token</span>
               <input
                 className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm uppercase text-ink outline-none transition focus:border-accent focus:bg-white"
                 maxLength={2}
@@ -449,7 +468,9 @@ export function CategoriesManager({
                     {draft.name || "Category name"}
                   </p>
                   <p className="mt-1 text-sm text-muted">
-                    {draft.type === "expense" ? "Expense bucket" : "Income source"}{" "}
+                    {draft.type === "expense"
+                      ? "Expense bucket"
+                      : "Income source"}{" "}
                     · average {formatCurrencyFromCents(0)}
                   </p>
                 </div>

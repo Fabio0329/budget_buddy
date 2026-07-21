@@ -69,9 +69,9 @@ export default function MarketingHomePage() {
           <div className="flex flex-wrap gap-3">
             <Link
               className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-              href="/dashboard"
+              href="/demo"
             >
-              Preview the app shell
+              Explore demo
             </Link>
             <Link
               className="rounded-full border border-line bg-white/50 px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-white"
@@ -162,9 +162,9 @@ export default function MarketingHomePage() {
           <div className="flex flex-wrap gap-3">
             <Link
               className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-              href="/signup"
+              href="/demo"
             >
-              Try the signup flow
+              Explore the populated demo
             </Link>
             <Link
               className="rounded-full border border-line bg-white/60 px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-white"

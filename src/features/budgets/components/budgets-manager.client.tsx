@@ -4,10 +4,11 @@ import Link from "next/link";
 import { startTransition, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { deleteBudget } from "@/features/budgets/budget.actions";
+import type { ReadOnlyInteractionMode } from "@/shared/types/interaction-mode";
 import type {
   BudgetMonthOption,
   BudgetOverviewItem,
-} from "@/features/budgets/budget.queries";
+} from "@/features/budgets/budget.types";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import {
@@ -15,35 +16,51 @@ import {
   monthLabelFromKey,
 } from "@/shared/utils/formatters";
 
+export interface BudgetsManagerProps {
+  readonly initialBudgets: BudgetOverviewItem[];
+  readonly monthOptions: BudgetMonthOption[];
+  readonly readOnlyBudgetsByMonth?: Record<string, BudgetOverviewItem[]>;
+  readonly readOnlyMode?: ReadOnlyInteractionMode;
+  readonly selectedMonth: string;
+}
+
 export function BudgetsManager({
   initialBudgets,
   monthOptions,
+  readOnlyBudgetsByMonth,
+  readOnlyMode,
   selectedMonth,
-}: Readonly<{
-  initialBudgets: BudgetOverviewItem[];
-  monthOptions: BudgetMonthOption[];
-  selectedMonth: string;
-}>) {
+}: BudgetsManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [localMonth, setLocalMonth] = useState(selectedMonth);
+  const activeMonth = readOnlyMode ? localMonth : selectedMonth;
+  const budgets = readOnlyMode
+    ? (readOnlyBudgetsByMonth?.[activeMonth] ?? [])
+    : initialBudgets;
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
-  const totalLimit = initialBudgets.reduce(
+  const totalLimit = budgets.reduce(
     (sum, budget) => sum + budget.limitAmountCents,
     0,
   );
-  const totalSpent = initialBudgets.reduce(
+  const totalSpent = budgets.reduce(
     (sum, budget) => sum + budget.spentAmountCents,
     0,
   );
-  const nearOrOverCount = initialBudgets.filter(
+  const nearOrOverCount = budgets.filter(
     (budget) => budget.status !== "under",
   ).length;
 
   function replaceMonth(month: string) {
+    if (readOnlyMode) {
+      setLocalMonth(month);
+      return;
+    }
+
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("month", month);
 
@@ -53,6 +70,11 @@ export function BudgetsManager({
   }
 
   function removeBudget(id: string) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Deleting a budget");
+      return;
+    }
+
     startDeleteTransition(async () => {
       const result = await deleteBudget(id);
       setError(result.status === "error" ? (result.message ?? null) : null);
@@ -66,7 +88,7 @@ export function BudgetsManager({
         <SectionCard className="p-5">
           <p className="text-sm text-muted">Budgets this month</p>
           <p className="mt-4 text-3xl font-semibold text-ink">
-            {initialBudgets.length}
+            {budgets.length}
           </p>
           <p className="mt-3 text-sm leading-6 text-muted">
             One budget per expense category and month.
@@ -99,7 +121,7 @@ export function BudgetsManager({
               Monthly budget review
             </p>
             <h2 className="section-title mt-2 text-3xl text-ink">
-              {monthLabelFromKey(selectedMonth)}
+              {monthLabelFromKey(activeMonth)}
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -108,7 +130,7 @@ export function BudgetsManager({
               <select
                 className="bg-transparent font-semibold text-ink outline-none"
                 onChange={(event) => replaceMonth(event.target.value)}
-                value={selectedMonth}
+                value={activeMonth}
               >
                 {monthOptions.map((month) => (
                   <option key={month.value} value={month.value}>
@@ -117,12 +139,24 @@ export function BudgetsManager({
                 ))}
               </select>
             </label>
-            <Link
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
-              href={`/budgets/new?month=${selectedMonth}`}
-            >
-              Add budget
-            </Link>
+            {readOnlyMode ? (
+              <button
+                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+                onClick={() =>
+                  readOnlyMode.onRestrictedAction("Adding a budget")
+                }
+                type="button"
+              >
+                Add budget
+              </button>
+            ) : (
+              <Link
+                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+                href={`/budgets/new?month=${selectedMonth}`}
+              >
+                Add budget
+              </Link>
+            )}
           </div>
         </div>
       </SectionCard>
@@ -139,7 +173,7 @@ export function BudgetsManager({
         </p>
       ) : null}
 
-      {initialBudgets.length > 0 ? (
+      {budgets.length > 0 ? (
         <SectionCard className="p-6">
           <div className="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -157,7 +191,7 @@ export function BudgetsManager({
           </div>
 
           <div className="mt-6 space-y-4">
-            {initialBudgets.map((budget) => (
+            {budgets.map((budget) => (
               <div
                 className="rounded-[24px] border border-line bg-white/70 p-5"
                 key={budget.id}
@@ -236,7 +270,9 @@ export function BudgetsManager({
                           ? "bg-warning"
                           : "bg-negative"
                     }`}
-                    style={{ width: `${Math.min(budget.progressPercent, 100)}%` }}
+                    style={{
+                      width: `${Math.min(budget.progressPercent, 100)}%`,
+                    }}
                   />
                 </div>
 
@@ -245,12 +281,24 @@ export function BudgetsManager({
                     {budget.progressPercent}% used
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    <Link
-                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
-                      href={`/budgets/${budget.id}/edit`}
-                    >
-                      Edit
-                    </Link>
+                    {readOnlyMode ? (
+                      <button
+                        className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                        onClick={() =>
+                          readOnlyMode.onRestrictedAction("Editing a budget")
+                        }
+                        type="button"
+                      >
+                        Edit
+                      </button>
+                    ) : (
+                      <Link
+                        className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                        href={`/budgets/${budget.id}/edit`}
+                      >
+                        Edit
+                      </Link>
+                    )}
                     <button
                       className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
                       disabled={isDeleting}

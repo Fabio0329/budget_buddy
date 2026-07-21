@@ -8,10 +8,13 @@ import { initialBudgetFormState } from "@/features/budgets/budget-form-state";
 import type {
   BudgetCategoryOption,
   BudgetMonthOption,
-} from "@/features/budgets/budget.queries";
+} from "@/features/budgets/budget.types";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
-import type { BudgetFormValues, BudgetManagerVM } from "@/shared/types/view-models";
+import type {
+  BudgetFormValues,
+  BudgetManagerVM,
+} from "@/shared/types/view-models";
 
 type BudgetFormProps = {
   categories: BudgetCategoryOption[];
@@ -104,7 +107,9 @@ export function BudgetForm({
             {mode === "edit" ? "Edit budget" : "New budget"}
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
-            {mode === "edit" ? "Adjust a category limit" : "Create a monthly budget"}
+            {mode === "edit"
+              ? "Adjust a category limit"
+              : "Create a monthly budget"}
           </h2>
         </div>
         <Link
@@ -123,7 +128,9 @@ export function BudgetForm({
             <select
               className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
               name="categoryId"
-              onChange={(event) => updateValue("categoryId", event.target.value)}
+              onChange={(event) =>
+                updateValue("categoryId", event.target.value)
+              }
               value={values.categoryId}
             >
               {categories.map((category) => (
@@ -162,7 +169,9 @@ export function BudgetForm({
               className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
               inputMode="decimal"
               name="limitAmount"
-              onChange={(event) => updateValue("limitAmount", event.target.value)}
+              onChange={(event) =>
+                updateValue("limitAmount", event.target.value)
+              }
               placeholder="0.00"
               value={values.limitAmount}
             />
