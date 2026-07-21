@@ -5,27 +5,12 @@ import {
   formatCurrencyFromCents,
   monthLabelFromKey,
 } from "@/shared/utils/formatters";
+import type {
+  BudgetCategoryOption,
+  BudgetMonthOption,
+  BudgetOverviewItem,
+} from "@/features/budgets/budget.types";
 import type { BudgetManagerVM } from "@/shared/types/view-models";
-
-export type BudgetCategoryOption = {
-  color: string;
-  id: string;
-  name: string;
-};
-
-export type BudgetMonthOption = {
-  label: string;
-  value: string;
-};
-
-export type BudgetOverviewItem = BudgetManagerVM & {
-  progressPercent: number;
-  remainingAmountCents: number;
-  remainingDisplay: string;
-  spentAmountCents: number;
-  spentDisplay: string;
-  status: "near" | "over" | "under";
-};
 
 function monthKey(year: number, month: number) {
   return `${year}-${String(month).padStart(2, "0")}`;
@@ -161,7 +146,9 @@ export async function getBudgetMonthOptions(
   const keys = new Set<string>();
 
   for (let offset = -12; offset <= 12; offset += 1) {
-    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1));
+    const date = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1),
+    );
     keys.add(monthKey(date.getUTCFullYear(), date.getUTCMonth() + 1));
   }
 

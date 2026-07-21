@@ -9,6 +9,7 @@ import { initialAccountFormState } from "@/features/accounts/account-form-state"
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
+import type { ReadOnlyInteractionMode } from "@/shared/types/interaction-mode";
 import type { AccountManagerVM } from "@/shared/types/view-models";
 
 const accountTypes = [
@@ -29,6 +30,11 @@ type AccountDraft = {
   startingBalance: string;
   type: AccountType;
 };
+
+export interface AccountsManagerProps {
+  readonly initialAccounts: AccountManagerVM[];
+  readonly readOnlyMode?: ReadOnlyInteractionMode;
+}
 
 const emptyDraft: AccountDraft = {
   currentBalance: "",
@@ -57,9 +63,8 @@ function createDraft(account: AccountManagerVM): AccountDraft {
 
 export function AccountsManager({
   initialAccounts,
-}: Readonly<{
-  initialAccounts: AccountManagerVM[];
-}>) {
+  readOnlyMode,
+}: AccountsManagerProps) {
   const accounts = initialAccounts;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<AccountDraft>(emptyDraft);
@@ -75,7 +80,7 @@ export function AccountsManager({
 
   const selectedAccount =
     mode === "edit"
-      ? accounts.find((account) => account.id === selectedId) ?? null
+      ? (accounts.find((account) => account.id === selectedId) ?? null)
       : null;
 
   const totalBalance = accounts.reduce(
@@ -92,6 +97,13 @@ export function AccountsManager({
     previousState: typeof initialAccountFormState,
     formData: FormData,
   ) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction(
+        mode === "edit" ? "Editing an account" : "Adding an account",
+      );
+      return previousState;
+    }
+
     const result = await saveAccount(previousState, formData);
     setShowFormFeedback(true);
     setError(result.status === "error" ? (result.message ?? null) : null);
@@ -106,6 +118,11 @@ export function AccountsManager({
   }
 
   function resetForCreate() {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Adding an account");
+      return;
+    }
+
     setMode("create");
     setSelectedId(null);
     setDraft(emptyDraft);
@@ -115,6 +132,11 @@ export function AccountsManager({
   }
 
   function selectAccount(account: AccountManagerVM) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Editing an account");
+      return;
+    }
+
     setMode("edit");
     setSelectedId(account.id);
     setDraft(createDraft(account));
@@ -135,6 +157,11 @@ export function AccountsManager({
   }
 
   function deleteAccount(account: AccountManagerVM) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Deleting an account");
+      return;
+    }
+
     if (account.linkedTransactionCount > 0) {
       setError(
         "This account is linked to transactions. Reassign or remove those transactions before deleting it.",
@@ -212,8 +239,7 @@ export function AccountsManager({
           <div className="mt-6 space-y-3">
             {accounts.length > 0 ? (
               accounts.map((account) => {
-                const isSelected =
-                  mode === "edit" && selectedId === account.id;
+                const isSelected = mode === "edit" && selectedId === account.id;
 
                 return (
                   <div
@@ -230,7 +256,8 @@ export function AccountsManager({
                           {account.name}
                         </p>
                         <p className="mt-1 text-sm text-muted">
-                          {account.institution} · {formatAccountType(account.type)}
+                          {account.institution} ·{" "}
+                          {formatAccountType(account.type)}
                         </p>
                       </div>
                       <span
@@ -287,7 +314,9 @@ export function AccountsManager({
                         <button
                           className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
                           disabled={
-                            account.linkedTransactionCount > 0 || isDeleting
+                            (!readOnlyMode &&
+                              account.linkedTransactionCount > 0) ||
+                            isDeleting
                           }
                           onClick={() => deleteAccount(account)}
                           type="button"
@@ -314,7 +343,7 @@ export function AccountsManager({
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
             {mode === "edit"
-              ? selectedAccount?.name ?? "Account details"
+              ? (selectedAccount?.name ?? "Account details")
               : "Add a new account"}
           </h2>
           <form action={formAction} className="mt-6 grid gap-4">

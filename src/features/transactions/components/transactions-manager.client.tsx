@@ -12,6 +12,7 @@ import { deleteTransaction } from "@/features/transactions/transaction.actions";
 import { EmptyState } from "@/shared/components/empty-state";
 import { SectionCard } from "@/shared/components/section-card";
 import { formatCurrencyFromCents } from "@/shared/utils/formatters";
+import type { ReadOnlyInteractionMode } from "@/shared/types/interaction-mode";
 import type {
   AccountManagerVM,
   CategoryManagerVM,
@@ -19,12 +20,13 @@ import type {
   TransactionManagerVM,
 } from "@/shared/types/view-models";
 
-type TransactionsManagerProps = {
-  accounts: AccountManagerVM[];
-  categories: CategoryManagerVM[];
-  initialFilters: TransactionFilterState;
-  initialTransactions: TransactionManagerVM[];
-};
+export interface TransactionsManagerProps {
+  readonly accounts: AccountManagerVM[];
+  readonly categories: CategoryManagerVM[];
+  readonly initialFilters: TransactionFilterState;
+  readonly initialTransactions: TransactionManagerVM[];
+  readonly readOnlyMode?: ReadOnlyInteractionMode;
+}
 
 function parseAmount(value: string | null) {
   if (!value) {
@@ -40,18 +42,26 @@ export function TransactionsManager({
   categories,
   initialFilters,
   initialTransactions,
-}: Readonly<TransactionsManagerProps>) {
+  readOnlyMode,
+}: TransactionsManagerProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const transactions = initialTransactions;
-  const deferredQuery = useDeferredValue(initialFilters.query);
+  const [localFilters, setLocalFilters] = useState(initialFilters);
+  const filters = readOnlyMode ? localFilters : initialFilters;
+  const deferredQuery = useDeferredValue(filters.query);
   const hasAccounts = accounts.length > 0;
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [isDeleting, startDeleteTransition] = useTransition();
 
   function removeTransaction(id: string) {
+    if (readOnlyMode) {
+      readOnlyMode.onRestrictedAction("Deleting a transaction");
+      return;
+    }
+
     startDeleteTransition(async () => {
       const result = await deleteTransaction(id);
       setError(result.status === "error" ? (result.message ?? null) : null);
@@ -60,6 +70,23 @@ export function TransactionsManager({
   }
 
   function replaceSearchParam(name: string, value: string | null) {
+    if (readOnlyMode) {
+      const key = name === "q" ? "query" : name;
+      const fallback =
+        key === "query"
+          ? ""
+          : key === "type"
+            ? "all"
+            : key === "sort"
+              ? "date-desc"
+              : null;
+      setLocalFilters((current) => ({
+        ...current,
+        [key]: value || fallback,
+      }));
+      return;
+    }
+
     const nextParams = new URLSearchParams(searchParams.toString());
 
     if (!value || value === "all") {
@@ -69,7 +96,9 @@ export function TransactionsManager({
     }
 
     startTransition(() => {
-      router.replace(nextParams.toString() ? `${pathname}?${nextParams}` : pathname);
+      router.replace(
+        nextParams.toString() ? `${pathname}?${nextParams}` : pathname,
+      );
     });
   }
 
@@ -77,34 +106,36 @@ export function TransactionsManager({
     .filter((transaction) => {
       const matchesQuery =
         deferredQuery.trim().length === 0 ||
-        transaction.merchant.toLowerCase().includes(deferredQuery.toLowerCase()) ||
+        transaction.merchant
+          .toLowerCase()
+          .includes(deferredQuery.toLowerCase()) ||
         transaction.description
           .toLowerCase()
           .includes(deferredQuery.toLowerCase());
 
       const matchesType =
-        initialFilters.type === "all" || transaction.type === initialFilters.type;
+        filters.type === "all" || transaction.type === filters.type;
 
       const matchesAccount =
-        !initialFilters.accountId ||
-        transaction.accountId === initialFilters.accountId;
+        !filters.accountId || transaction.accountId === filters.accountId;
 
       const matchesCategory =
-        !initialFilters.categoryId ||
-        transaction.categoryId === initialFilters.categoryId;
+        !filters.categoryId || transaction.categoryId === filters.categoryId;
 
       const matchesDateFrom =
-        !initialFilters.dateFrom || transaction.date >= initialFilters.dateFrom;
+        !filters.dateFrom || transaction.date >= filters.dateFrom;
 
       const matchesDateTo =
-        !initialFilters.dateTo || transaction.date <= initialFilters.dateTo;
+        !filters.dateTo || transaction.date <= filters.dateTo;
 
-      const minAmountCents = parseAmount(initialFilters.amountMin);
-      const maxAmountCents = parseAmount(initialFilters.amountMax);
+      const minAmountCents = parseAmount(filters.amountMin);
+      const maxAmountCents = parseAmount(filters.amountMax);
       const absoluteAmount = Math.abs(transaction.amountCents);
 
-      const matchesMin = minAmountCents === null || absoluteAmount >= minAmountCents;
-      const matchesMax = maxAmountCents === null || absoluteAmount <= maxAmountCents;
+      const matchesMin =
+        minAmountCents === null || absoluteAmount >= minAmountCents;
+      const matchesMax =
+        maxAmountCents === null || absoluteAmount <= maxAmountCents;
 
       return (
         matchesQuery &&
@@ -118,7 +149,7 @@ export function TransactionsManager({
       );
     })
     .sort((left, right) => {
-      switch (initialFilters.sort) {
+      switch (filters.sort) {
         case "date-asc":
           return left.date.localeCompare(right.date);
         case "amount-desc":
@@ -180,16 +211,28 @@ export function TransactionsManager({
               Search and refine activity
             </h2>
           </div>
-          <Link
-            className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
-              hasAccounts
-                ? "bg-ink text-canvas hover:opacity-90"
-                : "cursor-not-allowed border border-line bg-white/70 text-muted"
-            }`}
-            href={hasAccounts ? "/transactions/new" : "/accounts"}
-          >
-            {hasAccounts ? "Add transaction" : "Add account first"}
-          </Link>
+          {readOnlyMode ? (
+            <button
+              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              onClick={() =>
+                readOnlyMode.onRestrictedAction("Adding a transaction")
+              }
+              type="button"
+            >
+              Add transaction
+            </button>
+          ) : (
+            <Link
+              className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
+                hasAccounts
+                  ? "bg-ink text-canvas hover:opacity-90"
+                  : "cursor-not-allowed border border-line bg-white/70 text-muted"
+              }`}
+              href={hasAccounts ? "/transactions/new" : "/accounts"}
+            >
+              {hasAccounts ? "Add transaction" : "Add account first"}
+            </Link>
+          )}
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -197,17 +240,21 @@ export function TransactionsManager({
             <span className="text-sm font-semibold text-ink">Search</span>
             <input
               className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
-              onChange={(event) => replaceSearchParam("q", event.target.value || null)}
+              onChange={(event) =>
+                replaceSearchParam("q", event.target.value || null)
+              }
               placeholder="Merchant or description"
-              value={initialFilters.query}
+              value={filters.query}
             />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Type</span>
             <select
               className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
-              onChange={(event) => replaceSearchParam("type", event.target.value)}
-              value={initialFilters.type}
+              onChange={(event) =>
+                replaceSearchParam("type", event.target.value)
+              }
+              value={filters.type}
             >
               <option value="all">All types</option>
               <option value="expense">Expense</option>
@@ -222,7 +269,7 @@ export function TransactionsManager({
               onChange={(event) =>
                 replaceSearchParam("accountId", event.target.value || null)
               }
-              value={initialFilters.accountId ?? ""}
+              value={filters.accountId ?? ""}
             >
               <option value="">All accounts</option>
               {accounts.map((account) => (
@@ -239,7 +286,7 @@ export function TransactionsManager({
               onChange={(event) =>
                 replaceSearchParam("categoryId", event.target.value || null)
               }
-              value={initialFilters.categoryId ?? ""}
+              value={filters.categoryId ?? ""}
             >
               <option value="">All categories</option>
               {categories.map((category) => (
@@ -257,7 +304,7 @@ export function TransactionsManager({
                 replaceSearchParam("dateFrom", event.target.value || null)
               }
               type="date"
-              value={initialFilters.dateFrom ?? ""}
+              value={filters.dateFrom ?? ""}
             />
           </label>
           <label className="space-y-2">
@@ -268,7 +315,7 @@ export function TransactionsManager({
                 replaceSearchParam("dateTo", event.target.value || null)
               }
               type="date"
-              value={initialFilters.dateTo ?? ""}
+              value={filters.dateTo ?? ""}
             />
           </label>
           <label className="space-y-2">
@@ -280,7 +327,7 @@ export function TransactionsManager({
                 replaceSearchParam("amountMin", event.target.value || null)
               }
               placeholder="0.00"
-              value={initialFilters.amountMin ?? ""}
+              value={filters.amountMin ?? ""}
             />
           </label>
           <label className="space-y-2">
@@ -292,7 +339,7 @@ export function TransactionsManager({
                 replaceSearchParam("amountMax", event.target.value || null)
               }
               placeholder="0.00"
-              value={initialFilters.amountMax ?? ""}
+              value={filters.amountMax ?? ""}
             />
           </label>
         </div>
@@ -302,8 +349,10 @@ export function TransactionsManager({
             <span className="font-semibold text-ink">Sort</span>
             <select
               className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm text-ink outline-none transition focus:border-accent"
-              onChange={(event) => replaceSearchParam("sort", event.target.value)}
-              value={initialFilters.sort}
+              onChange={(event) =>
+                replaceSearchParam("sort", event.target.value)
+              }
+              value={filters.sort}
             >
               <option value="date-desc">Newest first</option>
               <option value="date-asc">Oldest first</option>
@@ -313,7 +362,11 @@ export function TransactionsManager({
           </label>
           <button
             className="rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
-            onClick={() => router.replace(pathname)}
+            onClick={() =>
+              readOnlyMode
+                ? setLocalFilters(initialFilters)
+                : router.replace(pathname)
+            }
             type="button"
           >
             Clear filters
@@ -365,7 +418,9 @@ export function TransactionsManager({
                     {transaction.description || "No description"}
                   </p>
                   {transaction.notes ? (
-                    <p className="mt-2 text-xs text-muted">{transaction.notes}</p>
+                    <p className="mt-2 text-xs text-muted">
+                      {transaction.notes}
+                    </p>
                   ) : null}
                 </div>
                 <p className="hidden text-sm text-muted lg:block">
@@ -403,12 +458,26 @@ export function TransactionsManager({
                     {transaction.amountDisplay}
                   </p>
                   <div className="mt-3 flex justify-end gap-2">
-                    <Link
-                      className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
-                      href={`/transactions/${transaction.id}/edit`}
-                    >
-                      Edit
-                    </Link>
+                    {readOnlyMode ? (
+                      <button
+                        className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
+                        onClick={() =>
+                          readOnlyMode.onRestrictedAction(
+                            "Editing a transaction",
+                          )
+                        }
+                        type="button"
+                      >
+                        Edit
+                      </button>
+                    ) : (
+                      <Link
+                        className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
+                        href={`/transactions/${transaction.id}/edit`}
+                      >
+                        Edit
+                      </Link>
+                    )}
                     <button
                       className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
                       disabled={isDeleting}
