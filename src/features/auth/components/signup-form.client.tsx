@@ -22,7 +22,7 @@ export function SignupForm({
       footer={
         <p className="text-sm text-muted">
           Already set up?{" "}
-          <Link className="font-semibold text-accent" href="/login">
+          <Link className="font-semibold text-primary-strong" href="/login">
             Log in instead
           </Link>
           .
@@ -58,12 +58,14 @@ export function SignupForm({
           type="password"
         />
         {state.message ? (
-          <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+          <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
             {state.message}
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted">Your financial data stays scoped to your account.</p>
+          <p className="text-sm text-muted">
+            Your financial data stays scoped to your account.
+          </p>
           <SubmitButton label="Create account" pendingLabel="Creating..." />
         </div>
       </form>

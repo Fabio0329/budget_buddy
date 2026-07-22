@@ -11,9 +11,9 @@ export function AppSidebar({
   user: AppUserVM;
 }>) {
   return (
-    <aside className="surface-panel sticky top-6 hidden h-[calc(100vh-3rem)] w-[280px] shrink-0 rounded-[32px] p-5 lg:flex lg:flex-col">
+    <aside className="surface-panel sticky top-6 hidden h-[calc(100vh-3rem)] w-[280px] shrink-0 rounded-xl p-5 lg:flex lg:flex-col">
       <BrandMark />
-      <div className="mt-8 rounded-[28px] border border-line bg-white/55 p-4">
+      <div className="mt-8 rounded-xl border border-line bg-surface p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-ink">{user.name}</p>

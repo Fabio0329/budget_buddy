@@ -103,7 +103,7 @@ export function BudgetForm({
     <SectionCard className="p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             {mode === "edit" ? "Edit budget" : "New budget"}
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
@@ -113,7 +113,7 @@ export function BudgetForm({
           </h2>
         </div>
         <Link
-          className="rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
           href={`/budgets?month=${values.month}`}
         >
           Back to budgets
@@ -126,7 +126,7 @@ export function BudgetForm({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Category</span>
             <select
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               name="categoryId"
               onChange={(event) =>
                 updateValue("categoryId", event.target.value)
@@ -147,7 +147,7 @@ export function BudgetForm({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Month</span>
             <select
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               name="month"
               onChange={(event) => updateValue("month", event.target.value)}
               value={values.month}
@@ -166,7 +166,7 @@ export function BudgetForm({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Limit amount</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               inputMode="decimal"
               name="limitAmount"
               onChange={(event) =>
@@ -183,7 +183,7 @@ export function BudgetForm({
           <label className="space-y-2 lg:col-span-2">
             <span className="text-sm font-semibold text-ink">Note</span>
             <textarea
-              className="min-h-28 w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="min-h-28 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               maxLength={2000}
               name="note"
               onChange={(event) => updateValue("note", event.target.value)}
@@ -197,14 +197,14 @@ export function BudgetForm({
         </div>
 
         {showFeedback && formState.status === "error" && formState.message ? (
-          <p className="mt-4 rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+          <p className="mt-4 rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
             {formState.message}
           </p>
         ) : null}
 
         <div className="mt-6 flex flex-wrap gap-3">
           <button
-            className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60"
             disabled={isSaving}
             type="submit"
           >
@@ -215,7 +215,7 @@ export function BudgetForm({
                 : "Create budget"}
           </button>
           <Link
-            className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+            className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
             href={`/budgets?month=${values.month}`}
           >
             Cancel

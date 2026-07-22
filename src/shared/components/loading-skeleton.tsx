@@ -10,7 +10,7 @@ export function LoadingSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="h-36 animate-pulse rounded-[28px] bg-white/60"
+            className="h-36 animate-pulse rounded-xl bg-surface"
           />
         ))}
       </div>

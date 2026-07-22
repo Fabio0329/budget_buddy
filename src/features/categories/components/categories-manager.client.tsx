@@ -13,11 +13,11 @@ import type { ReadOnlyInteractionMode } from "@/shared/types/interaction-mode";
 import type { CategoryManagerVM } from "@/shared/types/view-models";
 
 const colorChoices = [
-  { label: "Sky", value: "#4E8FC7" },
-  { label: "Teal", value: "#0F8B8D" },
-  { label: "Coral", value: "#D96C5F" },
-  { label: "Amber", value: "#D09A32" },
-  { label: "Slate", value: "#93A7BC" },
+  { label: "Green", value: "#67C56E" },
+  { label: "Navy", value: "#1F2B3D" },
+  { label: "Gold", value: "#F5C24B" },
+  { label: "Red", value: "#EF4444" },
+  { label: "Slate", value: "#667085" },
 ];
 
 type CategoryDraft = {
@@ -218,7 +218,7 @@ export function CategoriesManager({
       <SectionCard className="p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="eyebrow text-[11px] font-semibold text-accent">
+            <p className="eyebrow text-[11px] font-semibold text-primary-strong">
               Category system
             </p>
             <h2 className="section-title mt-2 text-3xl text-ink">
@@ -227,14 +227,14 @@ export function CategoriesManager({
           </div>
           <div className="flex flex-wrap gap-3">
             <button
-              className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+              className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
               onClick={() => resetForCreate("expense")}
               type="button"
             >
               Add expense category
             </button>
             <button
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
               onClick={() => resetForCreate("income")}
               type="button"
             >
@@ -248,7 +248,7 @@ export function CategoriesManager({
         <div className="space-y-6">
           {(["expense", "income"] as const).map((type) => (
             <SectionCard key={type} className="p-6">
-              <p className="eyebrow text-[11px] font-semibold text-accent">
+              <p className="eyebrow text-[11px] font-semibold text-primary-strong">
                 {type === "expense"
                   ? "Expense categories"
                   : "Income categories"}
@@ -265,17 +265,19 @@ export function CategoriesManager({
                     return (
                       <div
                         key={category.id}
-                        className={`rounded-[24px] border p-4 transition ${
+                        className={`rounded-xl border p-4 transition ${
                           isSelected
-                            ? "border-line-strong bg-white/90 shadow-[0_12px_30px_rgba(15,23,32,0.08)]"
-                            : "border-line bg-white/65"
+                            ? "border-line-strong bg-surface shadow-sm"
+                            : "border-line bg-surface"
                         }`}
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <span
-                              className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold text-white"
-                              style={{ backgroundColor: category.color }}
+                              className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-semibold text-ink"
+                              style={{
+                                backgroundColor: `color-mix(in srgb, ${category.color} 20%, var(--surface))`,
+                              }}
                             >
                               {category.iconToken}
                             </span>
@@ -314,14 +316,14 @@ export function CategoriesManager({
                         </p>
                         <div className="mt-4 flex flex-wrap gap-2">
                           <button
-                            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
                             onClick={() => selectCategory(category)}
                             type="button"
                           >
                             Edit
                           </button>
                           <button
-                            className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
+                            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
                             disabled={
                               (!readOnlyMode &&
                                 (category.linkedTransactionCount > 0 ||
@@ -349,7 +351,7 @@ export function CategoriesManager({
         </div>
 
         <SectionCard className="p-6">
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             {mode === "edit" ? "Edit category" : "Create category"}
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
@@ -366,7 +368,7 @@ export function CategoriesManager({
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Name</span>
               <input
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 maxLength={80}
                 name="name"
                 onChange={(event) => updateDraft("name", event.target.value)}
@@ -382,7 +384,7 @@ export function CategoriesManager({
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Type</span>
               <select
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 name="type"
                 onChange={(event) =>
                   updateDraft(
@@ -406,7 +408,7 @@ export function CategoriesManager({
                 Color accent
               </span>
               <select
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 name="color"
                 onChange={(event) => updateDraft("color", event.target.value)}
                 value={draft.color}
@@ -426,7 +428,7 @@ export function CategoriesManager({
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Icon token</span>
               <input
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm uppercase text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm uppercase text-ink outline-none transition focus:border-primary focus:bg-surface"
                 maxLength={2}
                 name="iconToken"
                 onChange={(event) =>
@@ -443,23 +445,25 @@ export function CategoriesManager({
             </label>
 
             {error ? (
-              <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+              <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
                 {error}
               </p>
             ) : null}
 
             {notice ? (
-              <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+              <p className="rounded-xl border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
                 {notice}
               </p>
             ) : null}
 
-            <div className="rounded-[24px] border border-line bg-white/70 p-4">
+            <div className="rounded-xl border border-line bg-surface p-4">
               <p className="text-sm font-semibold text-ink">Preview</p>
               <div className="mt-4 flex items-center gap-3">
                 <span
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold text-white"
-                  style={{ backgroundColor: draft.color }}
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-semibold text-ink"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${draft.color} 20%, var(--surface))`,
+                  }}
                 >
                   {draft.iconToken || "OT"}
                 </span>
@@ -479,7 +483,7 @@ export function CategoriesManager({
 
             <div className="flex flex-wrap gap-3 pt-2">
               <button
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60"
                 disabled={isSaving}
                 type="submit"
               >
@@ -490,7 +494,7 @@ export function CategoriesManager({
                     : "Create category"}
               </button>
               <button
-                className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+                className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
                 onClick={() => resetForCreate(draft.type)}
                 type="button"
               >

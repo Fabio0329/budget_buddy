@@ -54,7 +54,7 @@ function MobileNavMenu({
         <div className="hidden items-center gap-3 lg:flex">
           <div
             aria-label={`Signed in as ${user.name}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary-strong"
             title={user.email}
           >
             {user.initials}
@@ -66,7 +66,7 @@ function MobileNavMenu({
           aria-controls="mobile-navigation-menu"
           aria-expanded={isOpen}
           aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
-          className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-white/70 text-ink transition hover:border-line-strong hover:bg-white lg:hidden"
+          className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-surface text-ink transition hover:border-line-strong hover:bg-surface lg:hidden"
           onClick={() => setIsOpen((open) => !open)}
           type="button"
         >
@@ -96,7 +96,7 @@ function MobileNavMenu({
         aria-hidden={!isOpen}
         id="mobile-navigation-menu"
         className={cx(
-          "absolute -inset-x-4 top-[calc(100%+0.75rem)] z-30 overflow-hidden border-y border-line bg-white shadow-[0_18px_40px_rgba(15,23,32,0.14)] transition-[grid-template-rows,opacity] duration-600 ease-out sm:-inset-x-6 lg:hidden",
+          "absolute -inset-x-4 top-[calc(100%+0.75rem)] z-30 overflow-hidden border-y border-line bg-surface shadow-sm transition-[grid-template-rows,opacity] duration-600 ease-out sm:-inset-x-6 lg:hidden",
           isOpen
             ? "grid grid-rows-[1fr] opacity-100"
             : "pointer-events-none grid grid-rows-[0fr] opacity-0",

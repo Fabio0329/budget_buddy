@@ -16,7 +16,7 @@ export function DashboardSpendComparison({
     <SectionCard className="p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             Income vs expenses
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
@@ -25,7 +25,7 @@ export function DashboardSpendComparison({
         </div>
         <div className="flex items-center gap-4 text-xs text-muted">
           <span className="flex items-center gap-2">
-            <span className="status-dot bg-positive" />
+            <span className="status-dot bg-primary" />
             Income
           </span>
           <span className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function DashboardSpendComparison({
                 <span className="w-14 text-xs text-muted">Income</span>
                 <div className="h-3 flex-1 overflow-hidden rounded-full bg-canvas-strong">
                   <div
-                    className="h-full rounded-full bg-positive"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${(bar.income / maxValue) * 100}%` }}
                   />
                 </div>

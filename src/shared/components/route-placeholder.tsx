@@ -21,7 +21,7 @@ export function RoutePlaceholder({
           {bullets.map((bullet) => (
             <div
               key={bullet}
-              className="rounded-[24px] border border-line bg-white/65 p-4 text-sm leading-6 text-muted"
+              className="rounded-xl border border-line bg-surface p-4 text-sm leading-6 text-muted"
             >
               {bullet}
             </div>

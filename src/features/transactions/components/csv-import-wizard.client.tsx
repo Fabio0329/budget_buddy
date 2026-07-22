@@ -96,7 +96,9 @@ function parseMoneyToCents(value: string) {
 
 function isValidIsoDate(value: string) {
   const date = new Date(`${value}T00:00:00.000Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 function parseDateValue(value: string) {
@@ -210,16 +212,16 @@ export function CsvImportWizard({
     }
 
     return parsedCsv.rows.map((row, index) => {
-      const amountRaw = mapping.amount ? row[mapping.amount] ?? "" : "";
-      const dateRaw = mapping.date ? row[mapping.date] ?? "" : "";
+      const amountRaw = mapping.amount ? (row[mapping.amount] ?? "") : "";
+      const dateRaw = mapping.date ? (row[mapping.date] ?? "") : "";
       const descriptionRaw = mapping.description
-        ? row[mapping.description] ?? ""
+        ? (row[mapping.description] ?? "")
         : "";
-      const merchantRaw = mapping.merchant ? row[mapping.merchant] ?? "" : "";
-      const typeRaw = mapping.type ? row[mapping.type] ?? "" : "";
-      const accountRaw = mapping.account ? row[mapping.account] ?? "" : "";
-      const categoryRaw = mapping.category ? row[mapping.category] ?? "" : "";
-      const notesRaw = mapping.notes ? row[mapping.notes] ?? "" : "";
+      const merchantRaw = mapping.merchant ? (row[mapping.merchant] ?? "") : "";
+      const typeRaw = mapping.type ? (row[mapping.type] ?? "") : "";
+      const accountRaw = mapping.account ? (row[mapping.account] ?? "") : "";
+      const categoryRaw = mapping.category ? (row[mapping.category] ?? "") : "";
+      const notesRaw = mapping.notes ? (row[mapping.notes] ?? "") : "";
 
       const amountCents = parseMoneyToCents(amountRaw);
       const date = parseDateValue(dateRaw);
@@ -237,9 +239,8 @@ export function CsvImportWizard({
           candidate.name.toLowerCase() === categoryRaw.trim().toLowerCase(),
       );
       const fallbackCategory =
-        categories.find(
-          (candidate) => candidate.id === fallbackCategoryId,
-        ) ?? null;
+        categories.find((candidate) => candidate.id === fallbackCategoryId) ??
+        null;
 
       const chosenCategory = matchingCategory ?? fallbackCategory;
 
@@ -265,10 +266,7 @@ export function CsvImportWizard({
       } else if (!account) {
         status = "invalid";
         message = "Account could not be resolved";
-      } else if (
-        type !== "transfer" &&
-        !chosenCategory
-      ) {
+      } else if (type !== "transfer" && !chosenCategory) {
         status = "review";
         message = "Unknown category needs a fallback selection";
       } else {
@@ -288,7 +286,8 @@ export function CsvImportWizard({
           chosenCategory.type !== type
         ) {
           status = "review";
-          message = "Category type does not match the inferred transaction type";
+          message =
+            "Category type does not match the inferred transaction type";
         }
       }
 
@@ -298,13 +297,14 @@ export function CsvImportWizard({
         accountName: account?.name ?? "Unresolved account",
         amountCents,
         amountDisplay:
-          amountCents === null ? "Invalid amount" : formatCurrencyFromCents(amountCents),
-        categoryId:
-          type === "transfer" ? null : chosenCategory?.id ?? null,
+          amountCents === null
+            ? "Invalid amount"
+            : formatCurrencyFromCents(amountCents),
+        categoryId: type === "transfer" ? null : (chosenCategory?.id ?? null),
         categoryName:
           type === "transfer"
             ? "Transfer"
-            : chosenCategory?.name ?? "Unknown category",
+            : (chosenCategory?.name ?? "Unknown category"),
         date,
         dateDisplay: date ?? "Invalid date",
         description: descriptionRaw.trim(),
@@ -359,12 +359,18 @@ export function CsvImportWizard({
       setError(null);
       setNotice(null);
     } catch {
-      setError("The CSV could not be parsed. Check the file format and try again.");
+      setError(
+        "The CSV could not be parsed. Check the file format and try again.",
+      );
     }
   }
 
   function canPreview() {
-    return Boolean(mapping.amount && mapping.date && (mapping.description || mapping.merchant));
+    return Boolean(
+      mapping.amount &&
+      mapping.date &&
+      (mapping.description || mapping.merchant),
+    );
   }
 
   function confirmImport() {
@@ -442,14 +448,14 @@ export function CsvImportWizard({
       <SectionCard className="p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="eyebrow text-[11px] font-semibold text-accent">
+            <p className="eyebrow text-[11px] font-semibold text-primary-strong">
               Step 1
             </p>
             <h2 className="section-title mt-2 text-3xl text-ink">
               Upload a CSV
             </h2>
           </div>
-          <span className="rounded-full border border-line bg-white/70 px-3 py-1 text-xs font-semibold text-muted">
+          <span className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold text-muted">
             Current stage: {stage}
           </span>
         </div>
@@ -459,7 +465,7 @@ export function CsvImportWizard({
             <span className="text-sm font-semibold text-ink">CSV file</span>
             <input
               accept=".csv,text/csv"
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink file:mr-4 file:rounded-full file:border-0 file:bg-ink file:px-4 file:py-2 file:text-sm file:font-semibold file:text-canvas"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 if (file) {
@@ -475,7 +481,7 @@ export function CsvImportWizard({
                 Default account
               </span>
               <select
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 onChange={(event) => setDefaultAccountId(event.target.value)}
                 value={defaultAccountId}
               >
@@ -491,7 +497,7 @@ export function CsvImportWizard({
                 Unknown category fallback
               </span>
               <select
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 onChange={(event) => setFallbackCategoryId(event.target.value)}
                 value={fallbackCategoryId}
               >
@@ -510,7 +516,7 @@ export function CsvImportWizard({
         <SectionCard className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="eyebrow text-[11px] font-semibold text-accent">
+              <p className="eyebrow text-[11px] font-semibold text-primary-strong">
                 Step 2
               </p>
               <h2 className="section-title mt-2 text-3xl text-ink">
@@ -518,7 +524,7 @@ export function CsvImportWizard({
               </h2>
             </div>
             <button
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!canPreview()}
               onClick={() => {
                 if (canPreview()) {
@@ -539,7 +545,7 @@ export function CsvImportWizard({
                   {field}
                 </span>
                 <select
-                  className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                   onChange={(event) =>
                     setMapping((current) => ({
                       ...current,
@@ -570,7 +576,7 @@ export function CsvImportWizard({
         <SectionCard className="p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="eyebrow text-[11px] font-semibold text-accent">
+              <p className="eyebrow text-[11px] font-semibold text-primary-strong">
                 Step 3
               </p>
               <h2 className="section-title mt-2 text-3xl text-ink">
@@ -593,7 +599,7 @@ export function CsvImportWizard({
           <div className="mt-6 space-y-3">
             {resolvedRows.map((row) => (
               <div
-                className="rounded-[22px] border border-line bg-white/70 p-4"
+                className="rounded-xl border border-line bg-surface p-4"
                 key={row.id}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -642,7 +648,7 @@ export function CsvImportWizard({
 
           <div className="mt-6 flex flex-wrap gap-3">
             <button
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
               disabled={summary.valid === 0 || isImporting}
               onClick={confirmImport}
               type="button"
@@ -650,7 +656,7 @@ export function CsvImportWizard({
               {isImporting ? "Importing…" : "Import valid rows"}
             </button>
             <button
-              className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+              className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
               onClick={() => setStage("mapping")}
               type="button"
             >
@@ -661,13 +667,13 @@ export function CsvImportWizard({
       ) : null}
 
       {error ? (
-        <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+        <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
           {error}
         </p>
       ) : null}
 
       {notice ? (
-        <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+        <p className="rounded-xl border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
           {notice}
         </p>
       ) : null}

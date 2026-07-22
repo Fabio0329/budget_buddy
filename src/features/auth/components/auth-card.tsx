@@ -14,9 +14,11 @@ export function AuthCard({
   eyebrow: string;
 }>) {
   return (
-    <section className="surface-panel rounded-[32px] px-6 py-7 sm:px-8 sm:py-8">
+    <section className="surface-panel rounded-xl px-6 py-7 sm:px-8 sm:py-8">
       <div className="space-y-3">
-        <p className="eyebrow text-xs font-semibold text-accent">{eyebrow}</p>
+        <p className="eyebrow text-xs font-semibold text-primary-strong">
+          {eyebrow}
+        </p>
         <h2 className="section-title text-3xl leading-tight text-ink sm:text-4xl">
           {title}
         </h2>

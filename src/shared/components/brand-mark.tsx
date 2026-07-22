@@ -1,19 +1,18 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function BrandMark() {
   return (
-    <Link className="inline-flex items-center gap-3" href="/">
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-sm font-bold tracking-[0.2em] text-canvas">
-        BB
-      </span>
-      <span className="flex flex-col">
-        <span className="section-title text-2xl leading-none text-ink">
-          Budget Buddy
-        </span>
-        <span className="hidden sm:block eyebrow mt-1 text-[10px] font-semibold text-muted">
-          Personal finance dashboard
-        </span>
-      </span>
+    <Link aria-label="Budget Buddy home" className="inline-flex" href="/">
+      <Image
+        alt="Budget Buddy"
+        className="h-auto w-[132px] sm:w-[158px]"
+        height={470}
+        loading="eager"
+        sizes="(max-width: 639px) 132px, 158px"
+        src="/budget-buddy-logo.png"
+        width={1053}
+      />
     </Link>
   );
 }

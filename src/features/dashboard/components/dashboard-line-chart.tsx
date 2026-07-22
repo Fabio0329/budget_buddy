@@ -36,7 +36,7 @@ export function DashboardLineChart({
     <SectionCard className="p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             Daily spending
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
@@ -51,7 +51,7 @@ export function DashboardLineChart({
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[24px] border border-line bg-white/72 px-4 py-5">
+      <div className="mt-6 overflow-hidden rounded-xl border border-line bg-surface px-4 py-5">
         <svg
           aria-label="Daily spending line chart"
           className="h-[220px] w-full"
@@ -59,8 +59,14 @@ export function DashboardLineChart({
         >
           <defs>
             <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(78, 143, 199, 0.28)" />
-              <stop offset="100%" stopColor="rgba(78, 143, 199, 0.02)" />
+              <stop
+                offset="0%"
+                stopColor="color-mix(in srgb, var(--primary) 28%, transparent)"
+              />
+              <stop
+                offset="100%"
+                stopColor="color-mix(in srgb, var(--primary) 2%, transparent)"
+              />
             </linearGradient>
           </defs>
           {[0, 1, 2, 3].map((step) => {
@@ -68,7 +74,7 @@ export function DashboardLineChart({
             return (
               <line
                 key={step}
-                stroke="rgba(62, 84, 109, 0.14)"
+                stroke="var(--line)"
                 strokeDasharray="4 6"
                 x1="0"
                 x2={width}
@@ -87,7 +93,7 @@ export function DashboardLineChart({
               <path
                 d={path}
                 fill="none"
-                stroke="var(--color-accent)"
+                stroke="var(--color-primary)"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="4"
@@ -97,17 +103,16 @@ export function DashboardLineChart({
                 const min = Math.min(...points.map((entry) => entry.amount));
                 const range = Math.max(max - min, 1);
                 const x = (index / Math.max(points.length - 1, 1)) * width;
-                const y =
-                  height - ((point.amount - min) / range) * height;
+                const y = height - ((point.amount - min) / range) * height;
 
                 return (
                   <circle
                     key={point.id}
                     cx={x}
                     cy={y}
-                    fill="white"
+                    fill="var(--surface)"
                     r="5"
-                    stroke="var(--color-accent)"
+                    stroke="var(--color-primary)"
                     strokeWidth="3"
                   />
                 );

@@ -1,24 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --canvas: #f7fbff;
-  --canvas-strong: #edf5fb;
-  --surface: rgba(255, 255, 255, 0.78);
+  --primary: #67c56e;
+  --primary-hover: #4da85a;
+  --primary-light: #ddf5e1;
+  --primary-strong: color-mix(in srgb, var(--primary-hover) 68%, var(--ink));
+  --accent: #f5c24b;
+  --accent-hover: #d89d20;
+  --ink: #1f2b3d;
+  --muted: #667085;
+  --canvas: #f9fafb;
+  --canvas-strong: #f3f4f6;
+  --surface: #ffffff;
   --surface-strong: #ffffff;
-  --surface-ink: #111827;
-  --line: rgba(62, 84, 109, 0.14);
-  --line-strong: rgba(38, 54, 74, 0.24);
-  --ink: #0f1720;
-  --muted: #5e7086;
-  --positive: #0f8b8d;
-  --positive-soft: rgba(15, 139, 141, 0.12);
-  --negative: #d96c5f;
-  --negative-soft: rgba(217, 108, 95, 0.13);
-  --warning: #d09a32;
-  --warning-soft: rgba(208, 154, 50, 0.17);
-  --accent: #4e8fc7;
-  --accent-soft: rgba(78, 143, 199, 0.14);
-  --shadow: 0 24px 60px rgba(15, 23, 32, 0.09);
+  --surface-ink: #1f2b3d;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
+  --positive: #22c55e;
+  --positive-soft: #dcfce7;
+  --negative: #ef4444;
+  --negative-soft: #fee2e2;
+  --warning: #f59e0b;
+  --warning-soft: #fef3c7;
+  --accent-soft: #fef3c7;
+  --shadow: 0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
   --font-sans-stack:
     var(--font-geist), "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
   --font-display-stack:
@@ -35,6 +40,10 @@
   --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-strong: var(--primary-strong);
   --color-positive: var(--positive);
   --color-positive-soft: var(--positive-soft);
   --color-negative: var(--negative);
@@ -42,6 +51,7 @@
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-sans-stack);
   --font-display: var(--font-display-stack);
@@ -64,18 +74,7 @@
   }
 
   body {
-    background:
-      radial-gradient(
-        circle at top left,
-        rgba(78, 143, 199, 0.18),
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at top right,
-        rgba(15, 139, 141, 0.1),
-        transparent 28%
-      ),
-      linear-gradient(180deg, #fbfdff 0%, #eef5fb 100%);
+    background: var(--canvas);
     color: var(--ink);
     font-family: var(--font-sans-stack);
   }
@@ -92,14 +91,13 @@
   }
 
   ::selection {
-    background: rgba(78, 143, 199, 0.2);
+    background: var(--primary-light);
   }
 
   .surface-panel {
     background: var(--surface);
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
-    backdrop-filter: blur(16px);
   }
 
   .section-title {

@@ -13,21 +13,21 @@ export default function AuthLayout({
       </div>
       <div className="grid flex-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <section className="space-y-5">
-          <p className="eyebrow text-xs font-semibold text-accent">
+          <p className="eyebrow text-xs font-semibold text-primary-strong">
             Secure account access
           </p>
           <h1 className="section-title text-4xl leading-tight text-ink sm:text-5xl">
             Sign in and move directly into the protected dashboard shell.
           </h1>
           <p className="max-w-xl text-base leading-7 text-muted">
-            Create a persisted account, sign in with a securely hashed
-            password, and use a revocable database-backed session.
+            Create a persisted account, sign in with a securely hashed password,
+            and use a revocable database-backed session.
           </p>
           <div className="grid gap-3 text-sm text-muted sm:grid-cols-2">
-            <div className="rounded-[24px] border border-line bg-white/55 p-4">
+            <div className="rounded-xl border border-line bg-surface p-4">
               Use the email you registered with.
             </div>
-            <div className="rounded-[24px] border border-line bg-white/55 p-4">
+            <div className="rounded-xl border border-line bg-surface p-4">
               Password must contain letters and numbers.
             </div>
           </div>
