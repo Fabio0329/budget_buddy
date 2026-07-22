@@ -204,7 +204,7 @@ export function TransactionsManager({
       <SectionCard className="p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="eyebrow text-[11px] font-semibold text-accent">
+            <p className="eyebrow text-[11px] font-semibold text-primary-strong">
               Filters
             </p>
             <h2 className="section-title mt-2 text-3xl text-ink">
@@ -213,7 +213,7 @@ export function TransactionsManager({
           </div>
           {readOnlyMode ? (
             <button
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
               onClick={() =>
                 readOnlyMode.onRestrictedAction("Adding a transaction")
               }
@@ -225,8 +225,8 @@ export function TransactionsManager({
             <Link
               className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
                 hasAccounts
-                  ? "bg-ink text-canvas hover:opacity-90"
-                  : "cursor-not-allowed border border-line bg-white/70 text-muted"
+                  ? "bg-primary text-ink hover:bg-primary-hover"
+                  : "cursor-not-allowed border border-line bg-surface text-muted"
               }`}
               href={hasAccounts ? "/transactions/new" : "/accounts"}
             >
@@ -239,7 +239,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Search</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("q", event.target.value || null)
               }
@@ -250,7 +250,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Type</span>
             <select
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("type", event.target.value)
               }
@@ -265,7 +265,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Account</span>
             <select
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("accountId", event.target.value || null)
               }
@@ -282,7 +282,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Category</span>
             <select
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("categoryId", event.target.value || null)
               }
@@ -299,7 +299,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Date from</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("dateFrom", event.target.value || null)
               }
@@ -310,7 +310,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Date to</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               onChange={(event) =>
                 replaceSearchParam("dateTo", event.target.value || null)
               }
@@ -321,7 +321,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Min amount</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               inputMode="decimal"
               onChange={(event) =>
                 replaceSearchParam("amountMin", event.target.value || null)
@@ -333,7 +333,7 @@ export function TransactionsManager({
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">Max amount</span>
             <input
-              className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+              className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
               inputMode="decimal"
               onChange={(event) =>
                 replaceSearchParam("amountMax", event.target.value || null)
@@ -348,7 +348,7 @@ export function TransactionsManager({
           <label className="flex items-center gap-3 text-sm">
             <span className="font-semibold text-ink">Sort</span>
             <select
-              className="rounded-full border border-line bg-white/80 px-4 py-2 text-sm text-ink outline-none transition focus:border-accent"
+              className="rounded-full border border-line bg-surface px-4 py-2 text-sm text-ink outline-none transition focus:border-primary"
               onChange={(event) =>
                 replaceSearchParam("sort", event.target.value)
               }
@@ -361,7 +361,7 @@ export function TransactionsManager({
             </select>
           </label>
           <button
-            className="rounded-full border border-line bg-white/70 px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
             onClick={() =>
               readOnlyMode
                 ? setLocalFilters(initialFilters)
@@ -375,20 +375,20 @@ export function TransactionsManager({
       </SectionCard>
 
       {error ? (
-        <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+        <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
           {error}
         </p>
       ) : null}
 
       {notice ? (
-        <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+        <p className="rounded-xl border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
           {notice}
         </p>
       ) : null}
 
       {filteredTransactions.length > 0 ? (
         <SectionCard className="overflow-hidden p-0">
-          <div className="hidden grid-cols-[96px_1.1fr_0.8fr_0.8fr_130px_140px] gap-4 border-b border-line bg-white/70 px-6 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted lg:grid">
+          <div className="hidden grid-cols-[96px_1.1fr_0.8fr_0.8fr_130px_140px] gap-4 border-b border-line bg-surface px-6 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted lg:grid">
             <span>Date</span>
             <span>Merchant / description</span>
             <span>Account</span>
@@ -400,7 +400,7 @@ export function TransactionsManager({
             {filteredTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="grid gap-4 bg-white/50 px-6 py-5 lg:grid-cols-[96px_1.1fr_0.8fr_0.8fr_130px_140px] lg:items-center"
+                className="grid gap-4 bg-surface px-6 py-5 lg:grid-cols-[96px_1.1fr_0.8fr_0.8fr_130px_140px] lg:items-center"
               >
                 <div>
                   <p className="text-sm font-semibold text-ink">
@@ -436,7 +436,7 @@ export function TransactionsManager({
                         ? "bg-negative-soft text-negative"
                         : transaction.type === "income"
                           ? "bg-positive-soft text-positive"
-                          : "bg-accent-soft text-accent"
+                          : "bg-primary-light text-primary-strong"
                     }`}
                   >
                     {transaction.type}
@@ -460,7 +460,7 @@ export function TransactionsManager({
                   <div className="mt-3 flex justify-end gap-2">
                     {readOnlyMode ? (
                       <button
-                        className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
+                        className="rounded-full border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
                         onClick={() =>
                           readOnlyMode.onRestrictedAction(
                             "Editing a transaction",
@@ -472,14 +472,14 @@ export function TransactionsManager({
                       </button>
                     ) : (
                       <Link
-                        className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
+                        className="rounded-full border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong"
                         href={`/transactions/${transaction.id}/edit`}
                       >
                         Edit
                       </Link>
                     )}
                     <button
-                      className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
+                      className="rounded-full border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
                       disabled={isDeleting}
                       onClick={() => removeTransaction(transaction.id)}
                       type="button"

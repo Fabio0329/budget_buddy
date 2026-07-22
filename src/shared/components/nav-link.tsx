@@ -35,15 +35,16 @@ export function NavLink({
       ? pathname === href || pathname.startsWith(`${href}/`)
       : pathname === href;
   const isActive =
-    !isExcluded && (isExplicitActive === null ? isMatchedByMode : isExplicitActive);
+    !isExcluded &&
+    (isExplicitActive === null ? isMatchedByMode : isExplicitActive);
 
   return (
     <Link
       className={cx(
-        "rounded-[24px] border px-4 py-3 transition",
+        "rounded-xl border px-4 py-3 transition",
         isActive
-          ? "border-line-strong bg-accent-soft text-ink shadow-[0_10px_24px_rgba(19,34,43,0.08)]"
-          : "border-transparent bg-transparent text-ink hover:border-line hover:bg-white/60",
+          ? "border-line-strong bg-primary-light text-ink shadow-sm"
+          : "border-transparent bg-transparent text-ink hover:border-line hover:bg-surface",
       )}
       href={href}
       onClick={onClick}

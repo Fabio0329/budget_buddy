@@ -227,7 +227,7 @@ export function AccountsManager({
         <SectionCard className="p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="eyebrow text-[11px] font-semibold text-accent">
+              <p className="eyebrow text-[11px] font-semibold text-primary-strong">
                 Account list
               </p>
               <h2 className="section-title mt-2 text-3xl text-ink">
@@ -244,10 +244,10 @@ export function AccountsManager({
                 return (
                   <div
                     key={account.id}
-                    className={`rounded-[24px] border p-4 transition ${
+                    className={`rounded-xl border p-4 transition ${
                       isSelected
-                        ? "border-line-strong bg-white/90 shadow-[0_12px_30px_rgba(15,23,32,0.08)]"
-                        : "border-line bg-white/65"
+                        ? "border-line-strong bg-surface shadow-sm"
+                        : "border-line bg-surface"
                     }`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -305,14 +305,14 @@ export function AccountsManager({
                       </span>
                       <div className="flex flex-wrap gap-2">
                         <button
-                          className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
                           onClick={() => selectAccount(account)}
                           type="button"
                         >
                           Edit
                         </button>
                         <button
-                          className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
+                          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-not-allowed disabled:opacity-55"
                           disabled={
                             (!readOnlyMode &&
                               account.linkedTransactionCount > 0) ||
@@ -338,7 +338,7 @@ export function AccountsManager({
         </SectionCard>
 
         <SectionCard className="p-6">
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             {mode === "edit" ? "Edit account" : "Create account"}
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
@@ -357,7 +357,7 @@ export function AccountsManager({
                 Account name
               </span>
               <input
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 maxLength={100}
                 name="name"
                 onChange={(event) => updateDraft("name", event.target.value)}
@@ -375,7 +375,7 @@ export function AccountsManager({
                 Institution or source
               </span>
               <input
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 maxLength={120}
                 name="institution"
                 onChange={(event) =>
@@ -393,7 +393,7 @@ export function AccountsManager({
             <label className="space-y-2">
               <span className="text-sm font-semibold text-ink">Type</span>
               <select
-                className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                 name="type"
                 onChange={(event) =>
                   updateDraft("type", event.target.value as AccountType)
@@ -418,7 +418,7 @@ export function AccountsManager({
                   Starting balance
                 </span>
                 <input
-                  className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                   inputMode="decimal"
                   name="startingBalance"
                   onChange={(event) =>
@@ -438,7 +438,7 @@ export function AccountsManager({
                   Current balance
                 </span>
                 <input
-                  className="w-full rounded-[20px] border border-line bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-accent focus:bg-white"
+                  className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition focus:border-primary focus:bg-surface"
                   inputMode="decimal"
                   name="currentBalance"
                   onChange={(event) =>
@@ -456,20 +456,20 @@ export function AccountsManager({
             </div>
 
             {error ? (
-              <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+              <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
                 {error}
               </p>
             ) : null}
 
             {notice ? (
-              <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+              <p className="rounded-xl border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
                 {notice}
               </p>
             ) : null}
 
             <div className="flex flex-wrap gap-3 pt-2">
               <button
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-wait disabled:opacity-60"
                 disabled={isSaving}
                 type="submit"
               >
@@ -480,7 +480,7 @@ export function AccountsManager({
                     : "Create account"}
               </button>
               <button
-                className="rounded-full border border-line bg-white/70 px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-white"
+                className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:border-line-strong hover:bg-surface"
                 onClick={resetForCreate}
                 type="button"
               >

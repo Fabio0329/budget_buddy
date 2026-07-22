@@ -94,7 +94,7 @@ const accounts: DemoAccount[] = [
 
 const categories: DemoCategory[] = [
   {
-    color: "#0F8B8D",
+    color: "var(--primary)",
     icon: "SA",
     id: "category-salary",
     name: "Salary",
@@ -102,7 +102,7 @@ const categories: DemoCategory[] = [
     type: "income",
   },
   {
-    color: "#2563EB",
+    color: "var(--positive)",
     icon: "FL",
     id: "category-freelance",
     name: "Freelance",
@@ -110,7 +110,7 @@ const categories: DemoCategory[] = [
     type: "income",
   },
   {
-    color: "#7C3AED",
+    color: "var(--ink)",
     icon: "HO",
     id: "category-housing",
     name: "Housing",
@@ -118,7 +118,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#D97706",
+    color: "var(--accent)",
     icon: "GR",
     id: "category-groceries",
     name: "Groceries",
@@ -126,7 +126,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#2563EB",
+    color: "var(--muted)",
     icon: "TR",
     id: "category-transport",
     name: "Transportation",
@@ -134,7 +134,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#DB2777",
+    color: "var(--negative)",
     icon: "DI",
     id: "category-dining",
     name: "Dining",
@@ -142,7 +142,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#0891B2",
+    color: "var(--primary-hover)",
     icon: "UT",
     id: "category-utilities",
     name: "Utilities",
@@ -150,7 +150,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#9333EA",
+    color: "var(--accent-hover)",
     icon: "EN",
     id: "category-entertainment",
     name: "Entertainment",
@@ -158,7 +158,7 @@ const categories: DemoCategory[] = [
     type: "expense",
   },
   {
-    color: "#DC2626",
+    color: "var(--warning)",
     icon: "HC",
     id: "category-healthcare",
     name: "Healthcare",
@@ -513,7 +513,7 @@ function buildCategorySpend(
       const id = category?.id ?? "uncategorized";
       const current = spending.get(id);
       spending.set(id, {
-        color: category?.color ?? "#93A7BC",
+        color: category?.color ?? "var(--muted)",
         label: category?.name ?? "Uncategorized",
         value: (current?.value ?? 0) + Math.abs(transaction.amountCents),
       });

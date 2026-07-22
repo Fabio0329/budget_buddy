@@ -117,7 +117,7 @@ export function BudgetsManager({
       <SectionCard className="p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="eyebrow text-[11px] font-semibold text-accent">
+            <p className="eyebrow text-[11px] font-semibold text-primary-strong">
               Monthly budget review
             </p>
             <h2 className="section-title mt-2 text-3xl text-ink">
@@ -125,7 +125,7 @@ export function BudgetsManager({
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            <label className="flex items-center gap-3 rounded-full border border-line bg-white/70 px-4 py-2 text-sm text-muted">
+            <label className="flex items-center gap-3 rounded-full border border-line bg-surface px-4 py-2 text-sm text-muted">
               <span className="font-semibold text-ink">Month</span>
               <select
                 className="bg-transparent font-semibold text-ink outline-none"
@@ -141,7 +141,7 @@ export function BudgetsManager({
             </label>
             {readOnlyMode ? (
               <button
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
                 onClick={() =>
                   readOnlyMode.onRestrictedAction("Adding a budget")
                 }
@@ -151,7 +151,7 @@ export function BudgetsManager({
               </button>
             ) : (
               <Link
-                className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+                className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
                 href={`/budgets/new?month=${selectedMonth}`}
               >
                 Add budget
@@ -162,13 +162,13 @@ export function BudgetsManager({
       </SectionCard>
 
       {error ? (
-        <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+        <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
           {error}
         </p>
       ) : null}
 
       {notice ? (
-        <p className="rounded-[20px] border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
+        <p className="rounded-xl border border-positive/20 bg-positive-soft px-4 py-3 text-sm text-positive">
           {notice}
         </p>
       ) : null}
@@ -177,7 +177,7 @@ export function BudgetsManager({
         <SectionCard className="p-6">
           <div className="flex flex-col gap-3 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="eyebrow text-[11px] font-semibold text-accent">
+              <p className="eyebrow text-[11px] font-semibold text-primary-strong">
                 Budget rows
               </p>
               <h2 className="section-title mt-2 text-3xl text-ink">
@@ -193,7 +193,7 @@ export function BudgetsManager({
           <div className="mt-6 space-y-4">
             {budgets.map((budget) => (
               <div
-                className="rounded-[24px] border border-line bg-white/70 p-5"
+                className="rounded-xl border border-line bg-surface p-5"
                 key={budget.id}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -283,7 +283,7 @@ export function BudgetsManager({
                   <div className="flex flex-wrap gap-2">
                     {readOnlyMode ? (
                       <button
-                        className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                        className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
                         onClick={() =>
                           readOnlyMode.onRestrictedAction("Editing a budget")
                         }
@@ -293,14 +293,14 @@ export function BudgetsManager({
                       </button>
                     ) : (
                       <Link
-                        className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
+                        className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong"
                         href={`/budgets/${budget.id}/edit`}
                       >
                         Edit
                       </Link>
                     )}
                     <button
-                      className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
+                      className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink transition hover:border-line-strong disabled:cursor-wait disabled:opacity-55"
                       disabled={isDeleting}
                       onClick={() => removeBudget(budget.id)}
                       type="button"

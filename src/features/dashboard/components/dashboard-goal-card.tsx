@@ -8,7 +8,7 @@ export function DashboardGoalCard({
 }>) {
   return (
     <SectionCard className="p-6">
-      <p className="eyebrow text-[11px] font-semibold text-accent">
+      <p className="eyebrow text-[11px] font-semibold text-primary-strong">
         Goal focus
       </p>
       <h2 className="section-title mt-2 text-3xl text-ink">{goal.name}</h2>
@@ -18,7 +18,7 @@ export function DashboardGoalCard({
       </p>
       <div className="mt-5 h-3 overflow-hidden rounded-full bg-canvas-strong">
         <div
-          className="h-full rounded-full bg-positive"
+          className="h-full rounded-full bg-accent"
           style={{ width: `${goal.progressPercent}%` }}
         />
       </div>

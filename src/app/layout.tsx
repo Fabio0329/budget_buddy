@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   },
   description:
     "Budget Buddy is a personal finance dashboard for tracking spending, budgets, accounts, and cash flow.",
+  icons: {
+    apple: [{ type: "image/png", url: "/budget-buddy-icon.png" }],
+    icon: [{ type: "image/png", url: "/budget-buddy-icon.png" }],
+    shortcut: ["/budget-buddy-icon.png"],
+  },
 };
 
 export default function RootLayout({

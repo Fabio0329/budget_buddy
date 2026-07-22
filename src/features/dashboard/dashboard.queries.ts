@@ -57,7 +57,7 @@ function buildCategorySpend(
 
   for (const transaction of transactions) {
     const category = transaction.category ?? {
-      color: "#93A7BC",
+      color: "var(--muted)",
       id: "uncategorized",
       name: "Uncategorized",
     };
@@ -254,16 +254,19 @@ export async function getDashboardMonthData(
     0,
   );
   const categorySpend = buildCategorySpend(expenseTransactions);
-  const spentByCategory = expenseTransactions.reduce((spending, transaction) => {
-    if (transaction.category) {
-      spending.set(
-        transaction.category.id,
-        (spending.get(transaction.category.id) ?? 0) +
-          Math.abs(transaction.amountCents),
-      );
-    }
-    return spending;
-  }, new Map<string, number>());
+  const spentByCategory = expenseTransactions.reduce(
+    (spending, transaction) => {
+      if (transaction.category) {
+        spending.set(
+          transaction.category.id,
+          (spending.get(transaction.category.id) ?? 0) +
+            Math.abs(transaction.amountCents),
+        );
+      }
+      return spending;
+    },
+    new Map<string, number>(),
+  );
   const budgetProgress: BudgetProgressVM[] = budgets.map((budget) => {
     const spentCents = spentByCategory.get(budget.categoryId) ?? 0;
     const remainingCents = budget.limitAmountCents - spentCents;
@@ -302,7 +305,9 @@ export async function getDashboardMonthData(
       id: selectedMonth,
       incomeVsExpense: buildComparisonBars(comparisonMonths, transactions),
       label: monthLabelFromKey(selectedMonth),
-      recentTransactions: selectedTransactions.slice(0, 5).map(toRecentTransaction),
+      recentTransactions: selectedTransactions
+        .slice(0, 5)
+        .map(toRecentTransaction),
       summary: {
         largestExpenseCategory: categorySpend[0]?.label ?? "No expenses",
         monthLabel: monthLabelFromKey(selectedMonth),

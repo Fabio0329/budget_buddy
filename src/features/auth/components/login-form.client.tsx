@@ -22,7 +22,7 @@ export function LoginForm({
       footer={
         <p className="text-sm text-muted">
           Need an account?{" "}
-          <Link className="font-semibold text-accent" href="/signup">
+          <Link className="font-semibold text-primary-strong" href="/signup">
             Create one here
           </Link>
           .
@@ -50,12 +50,14 @@ export function LoginForm({
           type="password"
         />
         {state.message ? (
-          <p className="rounded-[20px] border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
+          <p className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
             {state.message}
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted">Your password is verified securely.</p>
+          <p className="text-sm text-muted">
+            Your password is verified securely.
+          </p>
           <SubmitButton label="Log in" pendingLabel="Signing in..." />
         </div>
       </form>

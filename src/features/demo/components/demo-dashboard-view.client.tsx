@@ -18,7 +18,7 @@ export function DemoDashboardView({ snapshot }: DemoDashboardViewProps) {
       dashboard={dashboard}
       description="A unified view of cash flow, category spending, budget pressure, account balances, and recent activity."
       monthControl={
-        <label className="flex w-fit items-center gap-3 rounded-full border border-line bg-white/70 px-4 py-2 text-sm text-muted">
+        <label className="flex w-fit items-center gap-3 rounded-full border border-line bg-surface px-4 py-2 text-sm text-muted">
           <span className="font-semibold text-ink">Month</span>
           <select
             className="bg-transparent font-semibold text-ink outline-none"

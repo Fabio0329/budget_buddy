@@ -13,7 +13,7 @@ export function SubmitButton({
 
   return (
     <button
-      className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
       disabled={pending}
       type="submit"
     >

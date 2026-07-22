@@ -33,13 +33,13 @@ export function DashboardOverview({
   const cards: DashboardCard[] = [
     {
       accent: (
-        <span className="rounded-full bg-positive-soft px-3 py-1 text-xs font-semibold text-positive">
+        <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-strong">
           Inflow
         </span>
       ),
       detail: "Total inflow captured for the selected month.",
       label: "Income",
-      tone: "text-positive",
+      tone: "text-primary-strong",
       value: dashboard.summary.monthlyIncomeDisplay,
     },
     {
@@ -72,6 +72,11 @@ export function DashboardOverview({
       value: dashboard.summary.largestExpenseCategory,
     },
     {
+      accent: (
+        <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-ink">
+          Plan
+        </span>
+      ),
       detail: "Planned spend still available before category caps.",
       label: "Remaining budget",
       tone: "text-ink",

@@ -9,7 +9,9 @@ export function PageHeader({
 }>) {
   return (
     <header className="space-y-3">
-      <p className="eyebrow text-xs font-semibold text-accent">{eyebrow}</p>
+      <p className="eyebrow text-xs font-semibold text-primary-strong">
+        {eyebrow}
+      </p>
       <h1 className="section-title text-4xl leading-tight text-ink sm:text-5xl">
         {title}
       </h1>

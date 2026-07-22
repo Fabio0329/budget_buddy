@@ -26,14 +26,14 @@ export function DashboardBudgetList({
     <SectionCard className="p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="eyebrow text-[11px] font-semibold text-accent">
+          <p className="eyebrow text-[11px] font-semibold text-primary-strong">
             Budget progress
           </p>
           <h2 className="section-title mt-2 text-3xl text-ink">
             Category limits
           </h2>
         </div>
-        <span className="rounded-full border border-line bg-white/70 px-3 py-1 text-xs font-semibold text-muted">
+        <span className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold text-muted">
           {periodLabel}
         </span>
       </div>
@@ -42,7 +42,7 @@ export function DashboardBudgetList({
         {budgets.map((budget) => (
           <div
             key={budget.id}
-            className="rounded-[24px] border border-line bg-white/70 p-4"
+            className="rounded-xl border border-line bg-surface p-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -61,7 +61,7 @@ export function DashboardBudgetList({
             </div>
             <div className="mt-4 h-3 overflow-hidden rounded-full bg-canvas-strong">
               <div
-                className="h-full rounded-full bg-accent transition-[width]"
+                className="h-full rounded-full bg-primary transition-[width]"
                 style={{ width: `${Math.min(budget.progressPercent, 100)}%` }}
               />
             </div>

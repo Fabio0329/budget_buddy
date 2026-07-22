@@ -64,11 +64,11 @@ export function DemoTour({ snapshot }: DemoTourProps) {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-line bg-white/90 shadow-[0_8px_24px_rgba(15,23,32,0.08)] backdrop-blur-xl">
+      <header className="sticky top-0 z-20 border-b border-line bg-surface shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center justify-between gap-4">
             <BrandMark />
-            <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+            <span className="rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-strong">
               Demo
             </span>
           </div>
@@ -79,7 +79,7 @@ export function DemoTour({ snapshot }: DemoTourProps) {
             {navigation.map((item) => (
               <button
                 aria-current={activeView === item.id ? "page" : undefined}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeView === item.id ? "bg-ink text-canvas" : "text-muted hover:bg-accent-soft hover:text-ink"}`}
+                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeView === item.id ? "bg-primary text-ink" : "text-muted hover:bg-primary-light hover:text-ink"}`}
                 key={item.id}
                 onClick={() => selectView(item.id)}
                 title={item.description}
@@ -90,14 +90,14 @@ export function DemoTour({ snapshot }: DemoTourProps) {
             ))}
           </nav>
           <Link
-            className="hidden shrink-0 text-sm font-semibold text-accent hover:underline lg:block"
+            className="hidden shrink-0 text-sm font-semibold text-primary-strong hover:underline lg:block"
             href="/signup"
           >
             Create account
           </Link>
         </div>
       </header>
-      <main className="surface-panel mx-3 my-3 min-h-[calc(100vh-7rem)] rounded-[28px] px-4 py-5 sm:mx-5 sm:my-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <main className="surface-panel mx-3 my-3 min-h-[calc(100vh-7rem)] rounded-xl px-4 py-5 sm:mx-5 sm:my-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
         <div className="mx-auto max-w-[1440px]">
           <DemoBanner />
           {activeView === "dashboard" ? (

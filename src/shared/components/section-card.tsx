@@ -11,7 +11,7 @@ export function SectionCard({
   return (
     <section
       className={cx(
-        "surface-panel rounded-[32px] border border-line bg-white/55",
+        "surface-panel rounded-xl border border-line bg-surface",
         className,
       )}
     >

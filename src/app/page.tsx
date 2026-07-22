@@ -38,13 +38,13 @@ export default function MarketingHomePage() {
         <BrandMark />
         <nav className="flex items-center gap-3 text-sm text-muted">
           <Link
-            className="rounded-full border border-line bg-white/50 px-4 py-2 transition hover:border-line-strong hover:bg-white"
+            className="rounded-full border border-line bg-surface px-4 py-2 transition hover:border-line-strong hover:bg-surface"
             href="/login"
           >
             Log in
           </Link>
           <Link
-            className="rounded-full bg-ink px-4 py-2 text-canvas transition hover:opacity-90"
+            className="rounded-full bg-primary px-4 py-2 text-ink transition hover:bg-primary-hover"
             href="/signup"
           >
             Start budgeting
@@ -54,7 +54,7 @@ export default function MarketingHomePage() {
 
       <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div className="animate-rise-in space-y-6">
-          <p className="eyebrow text-xs font-semibold text-accent">
+          <p className="eyebrow text-xs font-semibold text-primary-strong">
             Personal finance, without spreadsheet drag
           </p>
           <div className="space-y-4">
@@ -68,13 +68,13 @@ export default function MarketingHomePage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
               href="/demo"
             >
               Explore demo
             </Link>
             <Link
-              className="rounded-full border border-line bg-white/50 px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-white"
+              className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-surface"
               href="/signup"
             >
               Create your account
@@ -84,7 +84,7 @@ export default function MarketingHomePage() {
             {highlights.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-line bg-white/50 px-3 py-1"
+                className="rounded-full border border-line bg-surface px-3 py-1"
               >
                 {item}
               </span>
@@ -107,25 +107,25 @@ export default function MarketingHomePage() {
             </div>
           </div>
           <div className="card-grid px-6 py-6">
-            <div className="rounded-3xl bg-white/70 p-4">
+            <div className="rounded-xl bg-surface p-4">
               <p className="text-sm text-muted">Income</p>
               <p className="mt-2 text-2xl font-semibold text-positive">
                 {demoSnapshot.income}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/70 p-4">
+            <div className="rounded-xl bg-surface p-4">
               <p className="text-sm text-muted">Expenses</p>
               <p className="mt-2 text-2xl font-semibold text-negative">
                 {demoSnapshot.expenses}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/70 p-4">
+            <div className="rounded-xl bg-surface p-4">
               <p className="text-sm text-muted">Net cash flow</p>
               <p className="mt-2 text-2xl font-semibold text-ink">
                 {demoSnapshot.netCashFlow}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/70 p-4">
+            <div className="rounded-xl bg-surface p-4">
               <p className="text-sm text-muted">Remaining budget</p>
               <p className="mt-2 text-2xl font-semibold text-ink">
                 {demoSnapshot.remainingBudget}
@@ -147,7 +147,7 @@ export default function MarketingHomePage() {
       <section className="mt-16">
         <SectionCard className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
-            <p className="eyebrow text-xs font-semibold text-accent">
+            <p className="eyebrow text-xs font-semibold text-primary-strong">
               Current phase
             </p>
             <h2 className="section-title text-4xl text-ink">
@@ -161,13 +161,13 @@ export default function MarketingHomePage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-canvas transition hover:opacity-90"
+              className="rounded-full bg-primary px-5 py-3 text-sm font-semibold text-ink transition hover:bg-primary-hover"
               href="/demo"
             >
               Explore the populated demo
             </Link>
             <Link
-              className="rounded-full border border-line bg-white/60 px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-white"
+              className="rounded-full border border-line bg-surface px-5 py-3 text-sm font-semibold transition hover:border-line-strong hover:bg-surface"
               href="/login"
             >
               Go to login
