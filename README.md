@@ -1,103 +1,355 @@
 # Budget Buddy
 
-A full-stack personal finance dashboard built with Next.js, PostgreSQL, and
-Prisma.
+Budget Buddy is a full-stack personal finance application for tracking
+accounts, transactions, spending categories, monthly budgets, and cash flow.
+It combines a protected financial dashboard with a public, read-only demo that
+can be explored without creating an account.
+
+The application is built with the Next.js App Router, React, PostgreSQL, and
+Prisma. Product code is colocated with the route that owns it, while reusable
+UI and server infrastructure remain in dedicated shared modules.
+
+## Features
+
+### Personal finance management
+
+- Create and manage cash, checking, savings, credit-card, investment, and
+  other financial accounts.
+- Track current and starting balances in integer cents.
+- Create income, expense, and transfer transactions.
+- Search, filter, sort, edit, and delete transaction activity.
+- Organize income and expenses with color- and icon-based categories.
+- Create category budgets for individual calendar months.
+- Review budget limits, spending, remaining amounts, and status indicators.
+- Keep account balances synchronized when transactions are created, edited, or
+  removed.
+
+### Dashboard reporting
+
+- Monthly income, expenses, net cash flow, and remaining budget.
+- Total balance across accounts.
+- Spending by category.
+- Daily spending trends.
+- Three-month income and expense comparison.
+- Recent transaction activity.
+- Budget progress for the selected month.
+- Month switching based on available financial data.
+
+### Authentication and onboarding
+
+- Self-service signup, login, and logout.
+- Database-backed sessions stored in secure, HTTP-only cookies.
+- Password hashing using Node.js `scrypt`.
+- Login and signup throttling by email address and client IP.
+- Safe redirect handling after authentication.
+- One-time fictional sample data for new, empty accounts.
+- A public, read-only product demo at `/demo`.
+
+## MVP boundaries
+
+The current schema and persisted workflows cover authentication, accounts,
+categories, transactions, budgets, and dashboard reporting.
+
+CSV import, recurring transactions, and savings goals are reserved for a later
+phase. The `/transactions/import` route currently returns a not-found response
+instead of exposing an incomplete workflow.
+
+## Technology
+
+| Area | Technology |
+| --- | --- |
+| Application | Next.js 16 App Router |
+| UI | React 19, TypeScript, Tailwind CSS 4 |
+| Database | PostgreSQL |
+| Data access | Prisma 7 with the PostgreSQL driver adapter |
+| Authentication | Database sessions, HTTP-only cookies, `scrypt` password hashing |
+| Validation | TypeScript and route-colocated form validation |
+| CI/CD | GitHub Actions and Vercel preview deployments |
+
+## Application routes
+
+| Route | Access | Purpose |
+| --- | --- | --- |
+| `/` | Public | Product overview and entry point |
+| `/demo` | Public | Interactive, read-only dashboard with fictional data |
+| `/login` | Public | Account login |
+| `/signup` | Public | Account registration |
+| `/dashboard` | Authenticated | Monthly financial overview |
+| `/accounts` | Authenticated | Account and balance management |
+| `/categories` | Authenticated | Income and expense category management |
+| `/transactions` | Authenticated | Transaction search, filtering, and management |
+| `/transactions/new` | Authenticated | Transaction creation |
+| `/transactions/[id]/edit` | Authenticated | Transaction editing |
+| `/budgets` | Authenticated | Monthly budget overview |
+| `/budgets/new` | Authenticated | Budget creation |
+| `/budgets/[id]/edit` | Authenticated | Budget editing |
+| `/api/health` | Public | Stateless application health check |
+
+Protected URLs are checked by the Next.js proxy before rendering and are also
+validated against the database session inside server-rendered routes and
+mutations.
+
+## Architecture
+
+Budget Buddy uses route-colocated feature modules. Top-level URLs are direct
+children of `src/app`, and route-specific implementation code lives beside
+the route in private `_components` and `_lib` directories.
+
+```text
+src/
+├── app/
+│   ├── accounts/
+│   │   ├── _components/
+│   │   ├── _lib/
+│   │   ├── error.tsx
+│   │   ├── layout.tsx
+│   │   ├── loading.tsx
+│   │   └── page.tsx
+│   ├── budgets/
+│   ├── categories/
+│   ├── dashboard/
+│   ├── demo/
+│   ├── login/
+│   ├── signup/
+│   ├── transactions/
+│   ├── api/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── shared/
+│   ├── auth/
+│   ├── components/
+│   ├── types/
+│   └── utils/
+└── server/
+    ├── auth/
+    ├── config/
+    ├── db/
+    ├── generated/
+    └── observability/
+
+prisma/
+├── migrations/
+└── schema.prisma
+```
+
+The main ownership rules are:
+
+- Code used by one route belongs in that route.
+- Code shared by unrelated routes belongs in `src/shared`.
+- Database clients, sessions, configuration, logging, and generated code
+  belong in `src/server`.
+- Files that access secrets, cookies, password hashes, or PostgreSQL are
+  explicitly marked as server-only.
+- Client Component entry points use the `.client.tsx` suffix.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the complete module-boundary
+conventions.
+
+## Data and security model
+
+- Every financial record is owned by a user.
+- Database queries and mutations are scoped by the authenticated user ID.
+- Compound relations prevent transactions and budgets from referencing another
+  user's accounts or categories.
+- Financial amounts are stored as integer cents to avoid floating-point
+  rounding errors.
+- Session tokens are random values; only SHA-256 hashes are persisted.
+- Authentication rate-limit keys are HMAC-hashed before storage.
+- Production cookies are secure, HTTP-only, and use `SameSite=Lax`.
+- Open redirects are rejected during post-authentication navigation.
+- Application-wide headers restrict framing, content sniffing, browser
+  permissions, referrers, and cross-origin opener behavior.
+- The health endpoint is uncached and exposes no database or user information.
 
 ## Local development
 
-Requirements:
+### Requirements
 
-- Node.js 20.19 or newer
-- A PostgreSQL database, such as a Supabase project
+- Node.js 20.19 or newer. Node.js 22 is the repository default in `.nvmrc`.
+- npm
+- PostgreSQL 17 or a compatible hosted PostgreSQL provider
 
-Copy `.env.example` to `.env.local`, then set the application, migration, and
-authentication-throttling values:
+### 1. Install dependencies
 
-```env
-DATABASE_URL="postgresql://...transaction-pooler..."
-DIRECT_URL="postgresql://...session-pooler..."
-APP_URL="http://localhost:3000"
-AUTH_RATE_LIMIT_SECRET="a-long-random-secret"
+```bash
+nvm use
+npm ci
 ```
 
-Create the database schema and generate the Prisma client:
+If `nvm` is not installed, use any supported Node.js installation.
+
+### 2. Configure environment variables
+
+Copy the example file:
+
+```bash
+cp .env.example .env.local
+```
+
+The included defaults work with the Docker Compose database:
+
+```env
+DATABASE_URL="postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy"
+DIRECT_URL="postgresql://budget_buddy:budget_buddy@localhost:5432/budget_buddy"
+APP_URL="http://localhost:3000"
+AUTH_RATE_LIMIT_SECRET="replace-with-a-long-random-secret"
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Runtime PostgreSQL connection used by the application |
+| `DIRECT_URL` | Direct connection used by Prisma migrations; falls back to `DATABASE_URL` |
+| `APP_URL` | Canonical local or production application URL |
+| `AUTH_RATE_LIMIT_SECRET` | Secret used to HMAC authentication throttling keys |
+
+Use a long, random `AUTH_RATE_LIMIT_SECRET` outside local development. Never
+commit real credentials.
+
+### 3. Start PostgreSQL
+
+To use the included local database:
+
+```bash
+docker compose up -d postgres
+```
+
+Alternatively, replace `DATABASE_URL` and `DIRECT_URL` with the connection
+strings for a hosted PostgreSQL database. For providers with connection
+pooling, use the pooled connection for `DATABASE_URL` and a direct or
+session-based connection for `DIRECT_URL`.
+
+### 4. Prepare the database
+
+Apply the committed migrations and generate the Prisma client:
 
 ```bash
 npm run db:deploy
 npm run db:generate
 ```
 
-Then start the application:
+### 5. Start the application
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in a browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-New accounts can load a one-time fictional dataset from the empty dashboard to
-explore accounts, categories, transactions, budgets, and reporting. The public
-health check is available at `/api/health` and returns no database or user data.
+Create an account to use persisted workflows, load the optional sample dataset
+from an empty dashboard, or open `/demo` to explore the application without
+signing in.
 
-## Current MVP scope
+To stop the local database:
 
-The MVP supports self-service authentication, spending accounts, categories,
-transactions, monthly budgets, and dashboard reporting. CSV import, savings
-goals, and recurring transactions are intentionally disabled for a later phase.
+```bash
+docker compose down
+```
 
-For later schema changes, edit `prisma/schema.prisma` and create a migration:
+The named Docker volume preserves PostgreSQL data between restarts.
+
+## Database development
+
+The Prisma schema is stored in `prisma/schema.prisma`, committed migrations
+are stored in `prisma/migrations`, and the generated Prisma client is written
+to `src/server/generated/prisma`.
+
+After changing the schema, create and apply a development migration:
 
 ```bash
 npm run db:migrate -- --name describe_the_change
 ```
 
-Other useful database commands:
+Regenerate the client after schema changes:
+
+```bash
+npm run db:generate
+```
+
+Validate the schema or inspect local data with Prisma Studio:
 
 ```bash
 npm run db:validate
 npm run db:studio
 ```
 
-## Continuous integration and preview deployments
+Use `db:deploy` to apply existing migrations in CI, preview, and production
+environments. Do not use the development migration command during deployment.
 
-Pull requests targeting `main` run the GitHub Actions quality gates in
-`.github/workflows/ci.yml`: dependency installation, Prisma client generation
-and schema validation, ESLint, TypeScript checking, and a production Next.js
-build. Pushes to `main` run the same validation. Run the complete sequence
-locally with:
+## Available scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Next.js development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Start the production server |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript without emitting files |
+| `npm run ci` | Run Prisma generation, schema validation, lint, type checking, and build |
+| `npm run db:generate` | Generate the Prisma client |
+| `npm run db:validate` | Validate the Prisma schema |
+| `npm run db:migrate -- --name <name>` | Create and apply a development migration |
+| `npm run db:deploy` | Apply committed migrations |
+| `npm run db:studio` | Open Prisma Studio |
+
+## Continuous integration
+
+Pull requests targeting `main` and pushes to `main` run the quality gates in
+`.github/workflows/ci.yml`:
+
+1. Install dependencies with `npm ci`.
+2. Generate the Prisma client.
+3. Validate the Prisma schema.
+4. Run ESLint.
+5. Run the TypeScript compiler.
+6. Create a production Next.js build.
+
+Run the same sequence locally with:
 
 ```bash
 npm run ci
 ```
 
-After the quality gates pass, each non-draft pull request is deployed to the
-Vercel Preview environment. Configure a GitHub environment named `preview`
-with these secrets before enabling the workflow:
+## Preview deployments
 
-- `VERCEL_TOKEN`: a Vercel access token
-- `VERCEL_ORG_ID`: the `orgId` produced by `vercel link`
-- `VERCEL_PROJECT_ID`: the `projectId` produced by `vercel link`
+After the quality job succeeds, each non-draft pull request from a branch in
+this repository is deployed to a Vercel Preview environment. Pull requests
+from forks still run quality checks but skip deployment so secrets are not
+exposed.
 
-Configure `DATABASE_URL`, `DIRECT_URL`, and `AUTH_RATE_LIMIT_SECRET` in the
-Vercel project's Preview environment. Leave `APP_URL` unset for previews so
-the app uses the deployment-specific `VERCEL_URL`. Preview deployments should
-use an isolated non-production database because the app can create and modify
-financial records. For security, preview deployment is skipped for pull
-requests from forks; their quality gates still run. The custom GitHub Actions
-deployment is the preview deployment owner, so disable Vercel's parallel
-automatic Git deployments to avoid duplicate previews.
+The GitHub `preview` environment requires:
 
-Protect `main` in GitHub and require the `Quality gates` check before merging.
-Production deployment and migration automation are reserved for the next
-deployment phase.
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
 
-## Project structure
+The Vercel Preview environment requires:
 
-```text
-src/app/      Routes with colocated components, actions, queries, and validation
-src/shared/   Components, types, auth flows, and utilities shared across routes
-src/server/   Server-only infrastructure, data access, and generated clients
-prisma/       Database schema and migration history
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `AUTH_RATE_LIMIT_SECRET`
+
+Leave `APP_URL` unset for preview deployments so the application uses the
+deployment-specific `VERCEL_URL`. Preview deployments should use an isolated,
+non-production database because the application can create and modify
+financial records.
+
+The workflow applies committed migrations before publishing the preview URL.
+If the custom GitHub Actions workflow owns preview deployments, disable
+parallel automatic Git deployments in Vercel to prevent duplicate previews.
+
+## Health check
+
+The public health endpoint supports `GET` and `HEAD`:
+
+```bash
+curl http://localhost:3000/api/health
 ```
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for module-boundary conventions.
+Successful `GET` response:
+
+```json
+{
+  "status": "ok"
+}
+```
