@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { DemoTour } from "@/features/demo/components/demo-tour.client";
-import { createDemoSnapshot } from "@/features/demo/demo-data";
+import { DemoTour } from "@/app/demo/_components/demo-tour.client";
+import { createDemoSnapshot } from "@/app/demo/_lib/demo-data";
 
 export const metadata: Metadata = {
   title: "Product Demo",

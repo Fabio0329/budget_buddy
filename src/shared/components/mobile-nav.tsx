@@ -4,7 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { BrandMark } from "@/shared/components/brand-mark";
 import { NavLink } from "@/shared/components/nav-link";
-import { SignoutForm } from "@/features/auth/components/signout-form";
+import { SignoutForm } from "@/shared/components/auth/signout-form";
 import { cx } from "@/shared/utils/utils";
 import type { AppUserVM, NavItem } from "@/shared/types/view-models";
 
