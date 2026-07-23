@@ -1,4 +1,4 @@
-# Budget Buddy
+# Budget Buddy (WIP)
 
 Budget Buddy is a full-stack personal finance application for tracking
 accounts, transactions, spending categories, monthly budgets, and cash flow.
