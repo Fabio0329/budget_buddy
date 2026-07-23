@@ -94,9 +94,8 @@ deployment phase.
 ## Project structure
 
 ```text
-src/app/      Routes, layouts, and page composition
-src/features/ Feature-specific UI, state, actions, and validation
-src/shared/   Shared components, types, and utilities
+src/app/      Routes with colocated components, actions, queries, and validation
+src/shared/   Components, types, auth flows, and utilities shared across routes
 src/server/   Server-only infrastructure, data access, and generated clients
 prisma/       Database schema and migration history
 ```

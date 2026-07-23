@@ -1,57 +1,64 @@
 # Budget Buddy Architecture
 
-Budget Buddy uses a feature-based Next.js App Router structure. Routes compose
-pages, features own product-specific behavior, and shared backend
-infrastructure is isolated from browser code.
+Budget Buddy uses route-colocated features with the Next.js App Router. The
+filesystem mirrors the URL: every top-level route is a direct child of
+`src/app`, and nesting is reserved for nested URLs.
 
 ## Directory responsibilities
 
 ```text
 src/
-├── app/       Route files, layouts, loading states, and error boundaries
-├── features/  Product features and their interactive boundaries
-├── shared/    Shared components, types, and utilities
-└── server/    Server-only infrastructure, data access, and generated clients
+├── app/       Routes and the product code owned by each route
+├── shared/    Components, types, auth flows, and utilities used across routes
+└── server/    Server-only infrastructure and generated clients
 
 prisma/
 ├── schema.prisma
 └── migrations/
 ```
 
-## Route boundary
+## Route ownership
 
-Files under `src/app` should remain small. A route should authenticate, load
-the data needed by the page, and compose feature components. Business logic,
-database queries, and large interactive components should live outside the
-route tree.
-
-## Feature boundary
-
-Each directory under `src/features` owns one product capability:
+Route-specific components, actions, queries, validation, state, and types live
+beside the route that owns them:
 
 ```text
-features/transactions/
-├── components/
+app/transactions/
+├── _components/
 │   ├── transaction-form.client.tsx
 │   ├── transactions-manager.client.tsx
 │   └── csv-import-wizard.client.tsx
-├── transaction.actions.ts
-├── transaction.queries.ts
-└── transaction.validation.ts
+├── _lib/
+│   ├── transaction.actions.ts
+│   ├── transaction-form-state.ts
+│   ├── transaction.queries.ts
+│   └── transaction.validation.ts
+├── [id]/edit/page.tsx
+├── import/page.tsx
+├── new/page.tsx
+├── layout.tsx
+└── page.tsx
 ```
+
+Private folders prefixed with `_` are implementation details and are excluded
+from routing. Page and layout files should focus on authentication, data
+loading, and composition while their route-owned modules hold the detailed
+behavior.
 
 The `.client.tsx` suffix is a project convention that makes interactive React
 boundaries visible. These files use the `"use client"` directive because they
 need state, event handlers, browser APIs, or client-side hooks.
 
-Feature modules can add files such as:
+## Shared boundary
 
-```text
-account.actions.ts      Thin Next.js Server Actions
-account.queries.ts      Server-only read operations
-account.validation.ts   Input schemas and validation
-account.types.ts        Types local to the accounts feature
-```
+Move code to `src/shared` only when multiple routes own or consume it. Shared
+visual building blocks live in `src/shared/components`, common types in
+`src/shared/types`, and framework-independent helpers in `src/shared/utils`.
+Authentication actions and state shared by login, signup, and signout live in
+`src/shared/auth`.
+
+Avoid turning `shared` into a catch-all directory. Code used by one route
+belongs in that route's `_components` or `_lib` folder.
 
 ## Server boundary
 
@@ -72,21 +79,12 @@ Modules that use secrets, cookies, password hashes, or the database import
 `server-only`. This turns an accidental import from a Client Component into a
 build error.
 
-Database reads and writes should eventually go through server-only feature
-queries or a data access layer. Every financial operation must obtain the
-authenticated user on the server and scope database access by that user's ID.
-
-## Shared code
-
-Use `src/shared/components` for visual building blocks that are shared by
-unrelated features. Use `src/shared/utils` for small framework-independent
-helpers such as currency formatting, CSV parsing, and class-name composition.
-
-Avoid turning `shared` into a catch-all directory. Code that only makes sense
-for one product feature belongs with that feature.
+Database reads and writes go through server-only route queries or server
+infrastructure. Every financial operation must obtain the authenticated user
+on the server and scope database access by that user's ID.
 
 ## View models
 
 `src/shared/types/view-models.ts` contains presentation contracts shared across
-multiple features. Feature-specific query result types remain colocated with
-their server-only query modules.
+multiple routes. Route-specific query result types remain colocated in the
+owning route's `_lib` folder.
